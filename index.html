@@ -107,18 +107,39 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:10
 /* ===== TABLE ===== */
 .sec-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--ink3);
   padding:12px 0 6px;border-bottom:1px solid var(--border);margin-bottom:2px;}
-.row-line{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--border);transition:background .15s var(--ease);}
-.row-line:last-child{border-bottom:none;}
-.row-line:hover{background:var(--bg3);border-radius:var(--r-s);}
-.row-label{width:70px;font-weight:700;font-size:13px;flex-shrink:0;color:var(--hira);}
-.kata-r .row-label{color:var(--kata);}
-.row-cells{display:flex;gap:5px;flex-wrap:wrap;flex:1;}
+.chart-dual{display:flex;gap:16px;flex-wrap:wrap;}
+.chart-col{flex:1;min-width:280px;}
+.chart-col-title{font-size:14px;font-weight:800;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--border);}
+.chart-col.hira-col .chart-col-title{color:var(--hira);}
+.chart-col.kata-col .chart-col-title{color:var(--kata);}
+.chart-cells{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
 .kcell{background:var(--bg3);border-radius:var(--r-s);padding:6px 4px;text-align:center;min-width:50px;
   cursor:pointer;transition:all .15s var(--ease);border:1px solid transparent;}
 .kcell:hover{background:var(--hira-bg);border-color:var(--hira);transform:translateY(-2px);box-shadow:var(--shadow-s);}
-.kata-r .kcell:hover{background:var(--kata-bg);border-color:var(--kata);}
+.kata-col .kcell:hover{background:var(--kata-bg);border-color:var(--kata);}
 .kcell .ch{font-size:20px;line-height:1.2;font-family:var(--font-jp);}
 .kcell .rm{font-size:10px;color:var(--ink3);margin-top:1px;}
+
+/* ===== CHAR DETAIL MODAL ===== */
+.char-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;
+  animation:fadeIn .2s ease;backdrop-filter:blur(4px);}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.char-modal{background:var(--bg2);border-radius:var(--r-l);padding:28px;min-width:300px;max-width:400px;
+  box-shadow:var(--shadow-l);border:1px solid var(--border);animation:modalPop .3s var(--spring);position:relative;}
+@keyframes modalPop{from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);}}
+.char-modal-close{position:absolute;top:12px;right:14px;background:var(--bg3);border:1px solid var(--border);
+  border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:14px;display:flex;align-items:center;
+  justify-content:center;color:var(--ink2);transition:all .15s var(--ease);font-family:var(--font);}
+.char-modal-close:hover{background:var(--bad-bg);color:var(--bad);}
+.char-modal-char{font-size:100px;font-family:var(--font-jp);text-align:center;line-height:1.1;margin-bottom:8px;}
+.char-modal-romaji{text-align:center;font-size:24px;font-weight:800;color:var(--hira);margin-bottom:16px;}
+.char-modal-romaji.kata-rm{color:var(--kata);}
+.char-modal-stroke{text-align:center;margin-bottom:12px;}
+.char-modal-stroke svg{background:var(--bg3);border-radius:var(--r-m);border:1px solid var(--border);}
+.char-modal-listen{display:flex;justify-content:center;}
+.char-modal-listen button{padding:8px 20px;border-radius:var(--r-full);border:none;background:var(--warn);
+  color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:var(--font);transition:all .15s var(--ease);}
+.char-modal-listen button:hover{opacity:.9;transform:translateY(-1px);}
 
 /* ===== QUIZ SETUP ===== */
 .quiz-setup{animation:fadeUp .25s ease;}
@@ -281,6 +302,20 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:10
 
 .footer{text-align:center;color:var(--ink3);font-size:12px;margin-top:24px;padding:16px;font-weight:500;}
 
+/* ===== WRITE TAB ===== */
+.write-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;}
+.write-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.write-canvas-wrap{position:relative;width:300px;height:300px;}
+.write-canvas-wrap svg.write-ghost{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
+.write-canvas-wrap canvas{position:absolute;top:0;left:0;width:100%;height:100%;cursor:crosshair;touch-action:none;
+  border-radius:var(--r-l);z-index:2;}
+.write-canvas-bg{width:300px;height:300px;background:var(--bg2);border-radius:var(--r-l);box-shadow:var(--shadow-l);
+  border:1px solid var(--border);position:relative;overflow:hidden;}
+.write-info{font-size:14px;color:var(--ink3);font-weight:500;text-align:center;}
+.write-stroke-count{font-size:13px;color:var(--ink3);font-weight:600;}
+.write-success{color:var(--good);font-weight:800;font-size:16px;animation:popIn .4s ease;}
+.write-hint{font-size:12px;color:var(--ink3);font-style:italic;}
+
 /* ===== RESPONSIVE ===== */
 @media(max-width:600px){
   .nav{gap:2px;padding:3px;}
@@ -289,10 +324,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:10
   .q-romaji{font-size:28px;padding:16px 36px;}
   .q-grid{max-width:100%;}
   .chart-split{flex-direction:column;}
-  .row-label{width:56px;font-size:12px;}
+  .chart-dual{flex-direction:column;}
   .kcell{min-width:42px;padding:5px 3px;}
   .kcell .ch{font-size:17px;}
   .qs-chip{padding:6px 10px;}
+  .char-modal{min-width:auto;margin:16px;}
+  .char-modal-char{font-size:72px;}
+  .write-canvas-bg,.write-canvas-wrap{width:280px;height:280px;}
 }
 </style>
 </head>
@@ -300,22 +338,20 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:10
 <div class="wrap">
 
 <header class="hdr">
+  <button class="theme-btn" id="langToggle" style="right:110px;">🇺🇸 EN</button>
   <button class="theme-btn" id="themeToggle">🌙 Dark</button>
 </header>
 
 <nav class="nav">
   <button class="nav-btn active" data-tab="chart">📖 Chart</button>
   <button class="nav-btn" data-tab="quiz">🎯 Quiz</button>
+  <button class="nav-btn" data-tab="write">✍️ Write</button>
   <button class="nav-btn" data-tab="progress">📊 Progress</button>
 </nav>
 
 <!-- ===== CHART ===== -->
 <div class="panel active" id="panel-chart">
   <div class="card">
-    <div class="script-toggle" id="chartToggle">
-      <button class="script-btn h-on" data-s="hiragana">ひ Hiragana</button>
-      <button class="script-btn" data-s="katakana">カ Katakana</button>
-    </div>
     <div id="chartArea"></div>
   </div>
 </div>
@@ -326,6 +362,29 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:10
   <div id="quizSetup" class="quiz-setup"></div>
   <!-- Active quiz view -->
   <div id="quizActive" class="quiz-active" style="display:none;"></div>
+</div>
+
+<!-- ===== WRITE ===== -->
+<div class="panel" id="panel-write">
+  <div class="card">
+    <div class="card-title"><span class="ico">✍️</span> Stroke Order Practice</div>
+    <div class="write-wrap">
+      <div class="write-btns">
+        <button class="btn" id="writeNewBtn">🔀 New</button>
+        <button class="btn" id="writeClearBtn" style="background:var(--ink3);">🧹 Clear</button>
+        <button class="btn" id="writeSpeakBtn" style="background:var(--warn);">🔊</button>
+        <button class="btn" id="writeHintBtn" style="background:var(--kata);">💡 Hint</button>
+      </div>
+      <div class="write-canvas-bg">
+        <div class="write-canvas-wrap" id="writeCanvasWrap">
+          <canvas id="writeCanvas" width="300" height="300"></canvas>
+        </div>
+      </div>
+      <div class="write-stroke-count" id="writeStrokeCount">Stroke: 0/0</div>
+      <div class="write-info" id="writeCharInfo">Loading...</div>
+      <div class="write-hint" id="writeHint"></div>
+    </div>
+  </div>
 </div>
 
 <!-- ===== PROGRESS ===== -->
@@ -438,6 +497,55 @@ function allCharsFlat(script){
 const ALL_KANA = [...allCharsFlat("hiragana"),...allCharsFlat("katakana")];
 
 /* ================================================================
+   LANGUAGE
+   ================================================================ */
+const LANG={
+  en:{chart:'📖 Chart',quiz:'🎯 Quiz',write:'✍️ Write',progress:'📊 Progress',
+    newQuiz:'New Quiz',savedSessions:'Saved Sessions',start:'🚀 Start Quiz',selectAll:'Select all',clear:'Clear',
+    resume:'▶ Resume',redo:'🔄 Redo',correct:'Correct! 🎉',wrong:'Wrong!',complete:'Complete!',
+    overview:'Overview',accuracy:'Overall accuracy',charsPracticed:'Characters practiced',
+    totalQ:'Total questions answered',accuracyByRow:'Accuracy by Row',confused:'Characters you confuse',
+    resetAll:'🗑 Reset all progress',strokePractice:'Stroke Order Practice',tryAgain:'Try again',
+    wellDone:'Well done!',noData:'No data yet. Take a quiz first.',
+    charsSelected:'characters selected',selectAtLeast:'Select at least one row to begin.',
+    loading:'Loading...',listen:'🔊 Listen',replay:'🔄 Replay',newChar:'🔀 New',clearBtn:'🧹 Clear',
+    hint:'💡 Hint',stroke:'Stroke',allComplete:'All Stages Complete!',stageComplete:'complete!',
+    completed:'Completed',inProgress:'In progress',locked:'Locked',replaying:'Replaying',
+    returnTo:'↩ Return to current stage',exit:'✕ Exit',score:'Score',streak:'Streak',
+    question:'Question',stage:'Stage',traceChar:'trace the character',writeQ:'Write the character shown',
+    failedWrite:'See the correct strokes',basic:'Basic',dakuten:'Dakuten / Handakuten',combo:'Combinations (Yōon)'},
+  th:{chart:'📖 ตาราง',quiz:'🎯 แบบทดสอบ',write:'✍️ ฝึกเขียน',progress:'📊 ความก้าวหน้า',
+    newQuiz:'แบบทดสอบใหม่',savedSessions:'เซสชันที่บันทึก',start:'🚀 เริ่มทำ',selectAll:'เลือกทั้งหมด',clear:'ล้าง',
+    resume:'▶ ทำต่อ',redo:'🔄 ทำใหม่',correct:'ถูกต้อง! 🎉',wrong:'ผิด!',complete:'สำเร็จ!',
+    overview:'ภาพรวม',accuracy:'ความแม่นยำโดยรวม',charsPracticed:'ตัวอักษรที่ฝึก',
+    totalQ:'คำถามทั้งหมดที่ตอบ',accuracyByRow:'ความแม่นยำแต่ละแถว',confused:'ตัวอักษรที่สับสน',
+    resetAll:'🗑 รีเซ็ตทั้งหมด',strokePractice:'ฝึกลำดับขีด',tryAgain:'ลองอีกครั้ง',
+    wellDone:'เก่งมาก!',noData:'ยังไม่มีข้อมูล ทำแบบทดสอบก่อน',
+    charsSelected:'ตัวอักษรที่เลือก',selectAtLeast:'เลือกอย่างน้อย 1 แถวเพื่อเริ่ม',
+    loading:'กำลังโหลด...',listen:'🔊 ฟัง',replay:'🔄 เล่นซ้ำ',newChar:'🔀 ใหม่',clearBtn:'🧹 ล้าง',
+    hint:'💡 คำใบ้',stroke:'ขีดที่',allComplete:'ทำครบทุกด่านแล้ว!',stageComplete:'เสร็จแล้ว!',
+    completed:'เสร็จแล้ว',inProgress:'กำลังทำ',locked:'ล็อค',replaying:'กำลังเล่นซ้ำ',
+    returnTo:'↩ กลับไปด่านปัจจุบัน',exit:'✕ ออก',score:'คะแนน',streak:'ต่อเนื่อง',
+    question:'คำถาม',stage:'ด่าน',traceChar:'ลากตามตัวอักษร',writeQ:'เขียนตัวอักษรที่แสดง',
+    failedWrite:'ดูขีดที่ถูกต้อง',basic:'พื้นฐาน',dakuten:'ทากุเท็น / ฮันดากุเท็น',combo:'ตัวผสม (โยอง)'}
+};
+let lang=localStorage.getItem('kp-lang')||'en';
+function t(key){return LANG[lang]?.[key]||LANG.en[key]||key;}
+const langBtn=document.getElementById('langToggle');
+function updLang(){langBtn.textContent=lang==='en'?'🇺🇸 EN':'🇹🇭 TH';}
+updLang();
+langBtn.onclick=()=>{lang=lang==='en'?'th':'en';localStorage.setItem('kp-lang',lang);updLang();
+  // Update nav tabs
+  document.querySelectorAll('.nav-btn').forEach(b=>{
+    const tab=b.dataset.tab;
+    if(LANG[lang][tab])b.textContent=LANG[lang][tab];
+  });
+  renderChart();if(document.getElementById('panel-quiz').classList.contains('active'))renderQuizSetup();
+};
+// Init nav labels
+function initNavLabels(){document.querySelectorAll('.nav-btn').forEach(b=>{const tab=b.dataset.tab;if(LANG[lang][tab])b.textContent=LANG[lang][tab];});}
+
+/* ================================================================
    THEME
    ================================================================ */
 const themeBtn=document.getElementById("themeToggle");
@@ -462,45 +570,245 @@ document.querySelectorAll(".nav-btn").forEach(t=>{
 });
 
 /* ================================================================
-   TTS
+   TTS — prefer male Japanese voice
    ================================================================ */
-function speak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="ja-JP";u.rate=.85;speechSynthesis.speak(u);}catch(e){}}
+let _maleVoice=null;
+let _voicesLoaded=false;
+function loadMaleVoice(){
+  const voices=speechSynthesis.getVoices();
+  if(!voices.length)return;
+  _voicesLoaded=true;
+  // Prefer male Japanese voices
+  const jaVoices=voices.filter(v=>v.lang&&v.lang.startsWith('ja'));
+  _maleVoice=jaVoices.find(v=>/male|otoko|男/i.test(v.name))
+    ||jaVoices.find(v=>!/female|onna|女|haruka|kyoko|o-ren/i.test(v.name))
+    ||jaVoices[0]||null;
+}
+if(speechSynthesis.onvoiceschanged!==undefined) speechSynthesis.onvoiceschanged=loadMaleVoice;
+loadMaleVoice();
+
+function speak(t){
+  try{
+    speechSynthesis.cancel();
+    if(!_voicesLoaded)loadMaleVoice();
+    const u=new SpeechSynthesisUtterance(t);
+    u.lang='ja-JP'; u.rate=0.85;
+    if(_maleVoice) u.voice=_maleVoice;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
 
 /* ================================================================
-   CHART (read-only, not connected to quiz)
+   CHART (read-only, side-by-side Hiragana & Katakana)
    ================================================================ */
-let chartScript="hiragana";
-document.querySelectorAll("#chartToggle .script-btn").forEach(b=>{
-  b.onclick=()=>{
-    document.querySelectorAll("#chartToggle .script-btn").forEach(x=>x.classList.remove("h-on","k-on"));
-    chartScript=b.dataset.s;
-    b.classList.add(chartScript==="hiragana"?"h-on":"k-on");
-    renderChart();
-  };
-});
-
 function renderChart(){
   const area=document.getElementById("chartArea");
   area.innerHTML="";
-  const data=chartScript==="hiragana"?HIRA:KATA;
-  const isK=chartScript==="katakana";
-  const sections=[["Basic",data.basic],["Dakuten / Handakuten",data.dakuten],["Combinations (Yōon)",data.combo]];
-  sections.forEach(([title,rows])=>{
+  const sections=[["Basic","basic"],["Dakuten / Handakuten","dakuten"],["Combinations (Yōon)","combo"]];
+  sections.forEach(([title,key])=>{
     const lbl=document.createElement("div");lbl.className="sec-label";lbl.textContent=title;area.appendChild(lbl);
-    rows.forEach(row=>{
-      const line=document.createElement("div");line.className="row-line"+(isK?" kata-r":"");
-      const lb=document.createElement("div");lb.className="row-label";lb.textContent=row.label;
-      const cells=document.createElement("div");cells.className="row-cells";
+    const dual=document.createElement("div");dual.className="chart-dual";
+    // Hiragana column
+    const colH=document.createElement("div");colH.className="chart-col hira-col";
+    const thH=document.createElement("div");thH.className="chart-col-title";thH.textContent="ひ Hiragana";colH.appendChild(thH);
+    const cellsH=document.createElement("div");cellsH.className="chart-cells";
+    HIRA[key].forEach(row=>{
       row.chars.forEach(([ch,rm])=>{
         const c=document.createElement("div");c.className="kcell";
         c.innerHTML=`<div class="ch">${ch}</div><div class="rm">${rm}</div>`;
-        c.onclick=()=>speak(ch);
-        cells.appendChild(c);
+        c.onclick=()=>showCharDetail(ch,rm,"hiragana");
+        cellsH.appendChild(c);
       });
-      line.appendChild(lb);line.appendChild(cells);area.appendChild(line);
     });
+    colH.appendChild(cellsH);
+    // Katakana column
+    const colK=document.createElement("div");colK.className="chart-col kata-col";
+    const thK=document.createElement("div");thK.className="chart-col-title";thK.textContent="カ Katakana";colK.appendChild(thK);
+    const cellsK=document.createElement("div");cellsK.className="chart-cells";
+    KATA[key].forEach(row=>{
+      row.chars.forEach(([ch,rm])=>{
+        const c=document.createElement("div");c.className="kcell";
+        c.innerHTML=`<div class="ch">${ch}</div><div class="rm">${rm}</div>`;
+        c.onclick=()=>showCharDetail(ch,rm,"katakana");
+        cellsK.appendChild(c);
+      });
+    });
+    colK.appendChild(cellsK);
+    dual.appendChild(colH);dual.appendChild(colK);
+    area.appendChild(dual);
   });
 }
+
+/* ===== Character Detail Modal with KanjiVG stroke order ===== */
+const _svgCache={};
+
+function showCharDetail(ch,rm,script){
+  // Remove existing modal
+  const existing=document.querySelector('.char-modal-overlay');
+  if(existing)existing.remove();
+
+  const overlay=document.createElement('div');
+  overlay.className='char-modal-overlay';
+  overlay.onclick=e=>{if(e.target===overlay)overlay.remove();};
+
+  const modal=document.createElement('div');
+  modal.className='char-modal';
+
+  // Close button
+  const closeBtn=document.createElement('button');
+  closeBtn.className='char-modal-close';closeBtn.textContent='✕';
+  closeBtn.onclick=()=>overlay.remove();
+  modal.appendChild(closeBtn);
+
+  // Character
+  const charDiv=document.createElement('div');
+  charDiv.className='char-modal-char';charDiv.textContent=ch;
+  modal.appendChild(charDiv);
+
+  // Romaji
+  const rmDiv=document.createElement('div');
+  rmDiv.className='char-modal-romaji'+(script==='katakana'?' kata-rm':'');
+  rmDiv.textContent=rm;
+  modal.appendChild(rmDiv);
+
+  // Stroke order container
+  const strokeDiv=document.createElement('div');
+  strokeDiv.className='char-modal-stroke';
+  strokeDiv.id='strokeContainer';
+  strokeDiv.innerHTML='<div style="color:var(--ink3);font-size:13px;padding:20px;">Loading stroke order...</div>';
+  modal.appendChild(strokeDiv);
+
+  // Replay button
+  const replayDiv=document.createElement('div');
+  replayDiv.style.cssText='text-align:center;margin-bottom:12px;';
+  const replayBtn=document.createElement('button');
+  replayBtn.className='btn';replayBtn.style.cssText='background:var(--ink3);font-size:12px;padding:6px 16px;';
+  replayBtn.textContent='🔄 Replay';
+  replayBtn.onclick=()=>loadAndAnimateStrokes(ch,strokeDiv);
+  replayDiv.appendChild(replayBtn);
+  modal.appendChild(replayDiv);
+
+  // Listen button
+  const listenDiv=document.createElement('div');
+  listenDiv.className='char-modal-listen';
+  const listenBtn=document.createElement('button');
+  listenBtn.textContent='🔊 Listen';
+  listenBtn.onclick=()=>speak(ch);
+  listenDiv.appendChild(listenBtn);
+  modal.appendChild(listenDiv);
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  // Load strokes from KanjiVG
+  loadAndAnimateStrokes(ch,strokeDiv);
+
+  // Auto-speak
+  speak(ch);
+
+  // Close on Escape
+  function onKey(e){if(e.key==='Escape'){overlay.remove();document.removeEventListener('keydown',onKey);}}
+  document.addEventListener('keydown',onKey);
+}
+
+async function fetchCharSvgPaths(ch){
+  const code=ch.codePointAt(0).toString(16).padStart(5,'0');
+  const url=`https://raw.githubusercontent.com/KanjiVG/kanjivg/master/kanji/${code}.svg`;
+  let svgText;
+  if(_svgCache[code]){svgText=_svgCache[code];}
+  else{const resp=await fetch(url);if(!resp.ok)throw new Error('Not found');svgText=await resp.text();_svgCache[code]=svgText;}
+  const parser=new DOMParser();
+  const doc=parser.parseFromString(svgText,'image/svg+xml');
+  return {paths:doc.querySelectorAll('path[id*="-s"]'),nums:doc.querySelectorAll('g[id*="StrokeNumbers"] text'),
+    vb:doc.querySelector('svg')?.getAttribute('viewBox')||'0 0 109 109'};
+}
+
+function buildStrokeSVG(paths,nums,vb,strokeColor,ghostColor,numColor,width){
+  let h=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${width}" height="${width}" style="display:block;margin:0 auto;">`;
+  paths.forEach(p=>{h+=`<path d="${p.getAttribute('d')}" fill="none" stroke="${ghostColor}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`;});
+  paths.forEach((p,i)=>{h+=`<path class="stroke-anim" data-idx="${i}" d="${p.getAttribute('d')}" fill="none" stroke="${strokeColor}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="opacity:0;"/>`;});
+  nums.forEach(tn=>{h+=`<text transform="${tn.getAttribute('transform')||''}" font-size="8" fill="${numColor}" font-weight="700" font-family="var(--font)">${tn.textContent}</text>`;});
+  h+=`</svg>`;return h;
+}
+
+async function loadAndAnimateStrokes(ch,container){
+  const strokeColor=getComputedStyle(document.body).getPropertyValue('--hira').trim()||'#2d8a6e';
+  const ghostColor=getComputedStyle(document.body).getPropertyValue('--border2').trim()||'rgba(0,0,0,0.12)';
+  const numColor=getComputedStyle(document.body).getPropertyValue('--accent').trim()||'#e05545';
+
+  try{
+    const chars=[...ch]; // split into individual chars
+    const svgWidth=chars.length>1?140:200;
+    let html='<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">';
+
+    for(const c of chars){
+      const {paths,nums,vb}=await fetchCharSvgPaths(c);
+      if(!paths.length)continue;
+      html+=`<div style="text-align:center;"><div class="stroke-char-block">${buildStrokeSVG(paths,nums,vb,strokeColor,ghostColor,numColor,svgWidth)}</div>`;
+      if(chars.length>1) html+=`<div style="font-family:var(--font-jp);font-size:18px;margin-top:4px;color:var(--ink);">${c}</div>`;
+      html+=`</div>`;
+    }
+    html+='</div>';
+    container.innerHTML=html;
+
+    // Animate all blocks sequentially
+    const blocks=container.querySelectorAll('.stroke-char-block');
+    animateBlocksSequentially(blocks,0);
+
+  } catch(e){
+    container.innerHTML=`<div style="text-align:center;padding:16px;">
+      <div style="font-family:var(--font-jp);font-size:120px;color:var(--ink);line-height:1;">${ch}</div>
+      <div style="color:var(--ink3);font-size:12px;margin-top:8px;">Stroke order data unavailable</div>
+    </div>`;
+  }
+}
+
+function animateBlocksSequentially(blocks,idx){
+  if(idx>=blocks.length){
+    // Loop: restart after 2 seconds
+    setTimeout(()=>{
+      blocks.forEach(b=>{b.querySelectorAll('.stroke-anim').forEach(p=>{p.style.opacity='0';p.style.strokeDashoffset=p.style.strokeDasharray;});});
+      animateBlocksSequentially(blocks,0);
+    },2000);
+    return;
+  }
+  const paths=blocks[idx].querySelectorAll('.stroke-anim');
+  animateStrokePaths(paths,0,()=>animateBlocksSequentially(blocks,idx+1));
+}
+
+function animateStrokePaths(paths,index,onComplete){
+  if(index>=paths.length){if(onComplete)onComplete();return;}
+  const path=paths[index];
+  const length=path.getTotalLength();
+
+  // Reset before animating
+  path.style.opacity='1';
+  path.style.strokeDasharray=length+'px';
+  path.style.strokeDashoffset=length+'px';
+  path.style.strokeWidth='4.5';
+
+  const duration=350+Math.min(length*1.8,500);
+  const start=performance.now();
+
+  function tick(now){
+    const elapsed=now-start;
+    const progress=Math.min(elapsed/duration,1);
+    // Smooth ease-in-out curve
+    const eased=progress<0.5?4*progress*progress*progress:1-Math.pow(-2*progress+2,3)/2;
+    path.style.strokeDashoffset=(length*(1-eased))+'px';
+
+    if(progress<1){
+      requestAnimationFrame(tick);
+    } else {
+      path.style.strokeDashoffset='0';
+      path.style.strokeWidth='4';
+      // Next stroke after small delay
+      setTimeout(()=>animateStrokePaths(paths,index+1,onComplete),120);
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
 renderChart();
 
 /* ================================================================
@@ -561,7 +869,8 @@ const STAGES=[
   {id:"rev",name:"Recall",desc:"romaji → kana"},
   {id:"type",name:"Type",desc:"type the romaji"},
   {id:"listen",name:"Listen",desc:"audio → kana"},
-  {id:"match",name:"Match",desc:"drag & drop"}
+  {id:"match",name:"Match",desc:"drag & drop"},
+  {id:"write",name:"Write",desc:"trace the character"}
 ];
 const Q_PER_STAGE=20;
 
@@ -897,6 +1206,7 @@ function newQuizQuestion(){
   const stage=STAGES[s.stageIdx];
   const pool=activePool;
   if(stage.id==="match"){renderMatchQ(pool);return;}
+  if(stage.id==="write"){renderWriteQ(pool);return;}
 
   const correct=weightedPick(pool);
   const optPool=pool.length>=4?pool:ALL_KANA;
@@ -1090,6 +1400,143 @@ function renderMatchQ(pool){
 }
 
 /* ================================================================
+   QUIZ WRITE STAGE
+   ================================================================ */
+function renderWriteQ(pool){
+  const singles=pool.filter(k=>k.ch.length===1);
+  if(!singles.length){finishQ(true,pool[0]);return;}
+  const correct=weightedPick(singles.length>=4?singles:[...singles,...ALL_KANA.filter(k=>k.ch.length===1)]);
+
+  const area=document.getElementById("qaArea");
+  area.innerHTML="";
+
+  // Show romaji as prompt
+  const prompt=document.createElement("div");prompt.className="q-romaji";prompt.textContent=correct.rm;
+  area.appendChild(prompt);
+
+  // Info text
+  const info=document.createElement("div");info.style.cssText="font-size:13px;color:var(--ink3);margin-bottom:8px;";
+  info.textContent=t('writeQ');area.appendChild(info);
+
+  // Canvas container
+  const bg=document.createElement("div");bg.style.cssText="width:250px;height:250px;background:var(--bg2);border-radius:var(--r-l);box-shadow:var(--shadow-l);border:1px solid var(--border);position:relative;overflow:hidden;";
+  const wrap=document.createElement("div");wrap.style.cssText="position:relative;width:250px;height:250px;";
+  const canvas=document.createElement("canvas");canvas.width=250;canvas.height=250;
+  canvas.style.cssText="position:absolute;top:0;left:0;width:100%;height:100%;cursor:crosshair;touch-action:none;border-radius:var(--r-l);z-index:2;";
+  wrap.appendChild(canvas);bg.appendChild(wrap);area.appendChild(bg);
+
+  const strokeInfo=document.createElement("div");strokeInfo.style.cssText="font-size:13px;color:var(--ink3);font-weight:600;margin-top:8px;";
+  strokeInfo.textContent=t('loading');area.appendChild(strokeInfo);
+
+  const fb=document.createElement("div");fb.className="feedback";fb.id="qFb";
+  area.appendChild(fb);
+  answeredLock=false;
+
+  // Load strokes and setup writing
+  const qSize=250;
+  let qStrokes=[], qStrokeIdx=0, qSamplePts=[], qDrawing=false, qUserPts=[], qAttempts=0, qDone=false;
+
+  function qScalePoints(pts){return pts.map(p=>({x:p.x*qSize/109,y:p.y*qSize/109}));}
+  function qGetPos(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*qSize/r.width,y:(e.clientY-r.top)*qSize/r.height};}
+
+  function qDrawGrid(){
+    const ctx=canvas.getContext('2d');
+    ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--border').trim()||'rgba(0,0,0,0.08)';
+    ctx.lineWidth=1;ctx.setLineDash([5,5]);
+    ctx.beginPath();ctx.moveTo(qSize/2,0);ctx.lineTo(qSize/2,qSize);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(0,qSize/2);ctx.lineTo(qSize,qSize/2);ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  function qRenderGhost(){
+    const old=wrap.querySelector('svg');if(old)old.remove();
+    if(!qStrokes.length)return;
+    const ghost=getComputedStyle(document.body).getPropertyValue('--border2').trim()||'rgba(0,0,0,0.12)';
+    const accent=getComputedStyle(document.body).getPropertyValue('--accent').trim()||'#e05545';
+    const done=getComputedStyle(document.body).getPropertyValue('--hira').trim()||'#2d8a6e';
+    let svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 109 109" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;">`;
+    qStrokes.forEach((d,i)=>{
+      let c=ghost,w='3',o='0.5';
+      if(i<qStrokeIdx){c=done;o='0.3';}
+      else if(i===qStrokeIdx&&!qDone){c=accent;w='4';o='0.5';}
+      svg+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" opacity="${o}"/>`;
+    });
+    svg+=`</svg>`;wrap.insertAdjacentHTML('afterbegin',svg);
+  }
+
+  function qRedraw(){const ctx=canvas.getContext('2d');ctx.clearRect(0,0,qSize,qSize);qDrawGrid();}
+
+  function qDrawCompleted(d){
+    const {points}=sampleSvgPath(d,60);
+    const scaled=qScalePoints(points);if(!scaled.length)return;
+    const ctx=canvas.getContext('2d');
+    ctx.strokeStyle='#2e8ee0';ctx.lineWidth=5;ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.beginPath();ctx.moveTo(scaled[0].x,scaled[0].y);
+    for(let i=1;i<scaled.length;i++)ctx.lineTo(scaled[i].x,scaled[i].y);
+    ctx.stroke();
+  }
+
+  function qPrepareStroke(){
+    if(qStrokeIdx>=qStrokes.length)return;
+    const {points}=sampleSvgPath(qStrokes[qStrokeIdx],50);
+    qSamplePts=qScalePoints(points);
+  }
+
+  canvas.addEventListener('pointerdown',e=>{
+    if(qDone||answeredLock)return;e.preventDefault();
+    qDrawing=true;qUserPts=[];qUserPts.push(qGetPos(e));
+  });
+  canvas.addEventListener('pointermove',e=>{
+    if(!qDrawing||qDone||answeredLock)return;e.preventDefault();
+    const p=qGetPos(e);qUserPts.push(p);
+    if(qUserPts.length>1){
+      const prev=qUserPts[qUserPts.length-2];
+      let minD=Infinity;for(const ep of qSamplePts){const d=Math.hypot(p.x-ep.x,p.y-ep.y);if(d<minD)minD=d;}
+      const ctx=canvas.getContext('2d');
+      ctx.strokeStyle=minD<25?'#2e8ee0':'rgba(220,80,80,0.4)';
+      ctx.lineWidth=minD<25?5:4;ctx.lineCap='round';ctx.lineJoin='round';
+      ctx.beginPath();ctx.moveTo(prev.x,prev.y);ctx.lineTo(p.x,p.y);ctx.stroke();
+    }
+  });
+  canvas.addEventListener('pointerup',()=>{
+    if(!qDrawing)return;qDrawing=false;
+    if(qDone||answeredLock||!qStrokes.length)return;
+    const ok=validateStroke(qUserPts,qSamplePts);
+    if(ok){
+      qDrawCompleted(qStrokes[qStrokeIdx]);qStrokeIdx++;
+      strokeInfo.textContent=`${t('stroke')}: ${qStrokeIdx}/${qStrokes.length}`;
+      if(qStrokeIdx>=qStrokes.length){
+        qDone=true;fb.textContent=t('correct');fb.className="feedback good";speak(correct.ch);
+        answeredLock=true;finishQ(true,correct);
+      } else {qPrepareStroke();qRenderGhost();}
+    } else {
+      qAttempts++;
+      qRedraw();for(let i=0;i<qStrokeIdx;i++)qDrawCompleted(qStrokes[i]);
+      if(qAttempts>=3){
+        // Show answer after 3 fails
+        fb.innerHTML=`${t('wrong')} <span style="font-family:var(--font-jp)">${correct.ch}</span> = <b>${correct.rm}</b>`;
+        fb.className="feedback bad";answeredLock=true;
+        setTimeout(()=>speak(correct.ch),300);finishQ(false,correct);
+      } else {
+        strokeInfo.textContent=`${t('tryAgain')} — ${t('stroke')} ${qStrokeIdx+1} (${3-qAttempts} left)`;
+      }
+    }
+  });
+
+  // Init
+  (async()=>{
+    const code=correct.ch.codePointAt(0).toString(16).padStart(5,'0');
+    try{
+      const {paths}=await fetchCharSvgPaths(correct.ch);
+      qStrokes=[...paths].map(p=>p.getAttribute('d'));
+      if(qStrokes.length){qPrepareStroke();qRenderGhost();}
+      strokeInfo.textContent=`${t('stroke')}: 0/${qStrokes.length}`;
+      qRedraw();
+    }catch(e){strokeInfo.textContent='Stroke data unavailable';finishQ(true,correct);}
+  })();
+}
+
+/* ================================================================
    PROGRESS TAB
    ================================================================ */
 function refreshProgress(){
@@ -1139,9 +1586,336 @@ document.getElementById("resetAllBtn").onclick=()=>{
 };
 
 /* ================================================================
+   WRITE TAB — KanjiVG stroke-order practice
+   ================================================================ */
+const wCanvas=document.getElementById('writeCanvas');
+const wCtx=wCanvas.getContext('2d');
+let wChar=null;        // {ch, rm}
+let wStrokes=[];       // array of SVG path 'd' strings
+let wStrokeIdx=0;      // current expected stroke index
+let wSamplePoints=[];  // sampled points of current expected stroke
+let wDrawing=false;
+let wUserPoints=[];    // points drawn by user in current stroke
+let wCompleted=false;
+let wProgress=0;       // 0..1 how far along the current stroke the user has traced correctly
+let wStrokeLen=0;      // arc length of current expected stroke (in 109-unit space)
+const wSize=300;
+
+// Sample points along an SVG path 'd' attribute
+function sampleSvgPath(d,numPoints){
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');
+  const path=document.createElementNS(ns,'path');
+  path.setAttribute('d',d);
+  svg.appendChild(path);
+  document.body.appendChild(svg);
+  const len=path.getTotalLength();
+  const pts=[];
+  for(let i=0;i<=numPoints;i++){
+    const p=path.getPointAtLength(len*i/numPoints);
+    pts.push({x:p.x,y:p.y});
+  }
+  svg.remove();
+  return {points:pts,length:len};
+}
+
+// Scale KanjiVG coords (109x109) to canvas size
+function scaleX(x){return x*wSize/109;}
+function scaleY(y){return y*wSize/109;}
+function scalePoints(pts){return pts.map(p=>({x:scaleX(p.x),y:scaleY(p.y)}));}
+
+// Draw grid lines on canvas
+function drawGrid(){
+  wCtx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--border').trim()||'rgba(0,0,0,0.08)';
+  wCtx.lineWidth=1;
+  wCtx.setLineDash([6,6]);
+  // Center cross
+  wCtx.beginPath();wCtx.moveTo(wSize/2,0);wCtx.lineTo(wSize/2,wSize);wCtx.stroke();
+  wCtx.beginPath();wCtx.moveTo(0,wSize/2);wCtx.lineTo(wSize,wSize/2);wCtx.stroke();
+  wCtx.setLineDash([]);
+}
+
+// Render the ghost SVG strokes behind the canvas
+function renderGhostSVG(){
+  const wrap=document.getElementById('writeCanvasWrap');
+  // Remove old ghost
+  const old=wrap.querySelector('svg.write-ghost');
+  if(old)old.remove();
+
+  if(!wStrokes.length)return;
+
+  const ghostColor=getComputedStyle(document.body).getPropertyValue('--border2').trim()||'rgba(0,0,0,0.12)';
+  const nextColor=getComputedStyle(document.body).getPropertyValue('--accent').trim()||'#e05545';
+  const doneColor=getComputedStyle(document.body).getPropertyValue('--hira').trim()||'#2d8a6e';
+
+  let svg=`<svg class="write-ghost" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 109 109" preserveAspectRatio="xMidYMid meet">`;
+  wStrokes.forEach((d,i)=>{
+    let color,width,opacity;
+    if(i<wStrokeIdx){
+      // Completed stroke
+      color=doneColor;width='3';opacity='0.3';
+    } else if(i===wStrokeIdx && !wCompleted){
+      // Current stroke to draw — highlighted
+      color=nextColor;width='4';opacity='0.35';
+    } else {
+      // Future strokes
+      color=ghostColor;width='3';opacity='0.6';
+    }
+    svg+=`<path d="${d}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>`;
+
+    // Progressive blue fill on the current stroke, following how far the user has traced it
+    if(i===wStrokeIdx && !wCompleted && wStrokeLen>0 && wProgress>0){
+      const dashOffset=wStrokeLen*(1-wProgress);
+      svg+=`<path d="${d}" fill="none" stroke="${doneColor}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="${wStrokeLen}" stroke-dashoffset="${dashOffset}"/>`;
+    }
+  });
+
+  // Show stroke number for current
+  if(wStrokeIdx<wStrokes.length && !wCompleted && wSamplePoints.length){
+    const start=wSamplePoints[0];
+    svg+=`<circle cx="${start.x/wSize*109}" cy="${start.y/wSize*109}" r="4" fill="${nextColor}" opacity="0.7"/>`;
+    svg+=`<text x="${start.x/wSize*109+6}" y="${start.y/wSize*109-4}" font-size="8" fill="${nextColor}" font-weight="700">${wStrokeIdx+1}</text>`;
+  }
+
+  svg+=`</svg>`;
+  wrap.insertAdjacentHTML('afterbegin',svg);
+}
+
+// Redraw canvas (completed strokes in blue + grid)
+function redrawCanvas(){
+  wCtx.clearRect(0,0,wSize,wSize);
+  drawGrid();
+}
+
+// Draw a completed stroke on canvas in blue
+function drawCompletedStroke(strokeD){
+  const {points}=sampleSvgPath(strokeD,60);
+  const scaled=scalePoints(points);
+  if(!scaled.length)return;
+  wCtx.strokeStyle='#2e8ee0';
+  wCtx.lineWidth=6;
+  wCtx.lineCap='round';
+  wCtx.lineJoin='round';
+  wCtx.beginPath();
+  wCtx.moveTo(scaled[0].x,scaled[0].y);
+  for(let i=1;i<scaled.length;i++) wCtx.lineTo(scaled[i].x,scaled[i].y);
+  wCtx.stroke();
+}
+
+// Check if user's stroke matches the expected stroke
+function validateStroke(userPts,expectedPts){
+  if(userPts.length<5)return false;
+  if(expectedPts.length<2)return false;
+
+  // Check start point proximity
+  const startDist=Math.hypot(userPts[0].x-expectedPts[0].x,userPts[0].y-expectedPts[0].y);
+  if(startDist>45)return false; // too far from start
+
+  // Check end point proximity
+  const endUser=userPts[userPts.length-1];
+  const endExp=expectedPts[expectedPts.length-1];
+  const endDist=Math.hypot(endUser.x-endExp.x,endUser.y-endExp.y);
+  if(endDist>50)return false; // too far from end
+
+  // Check direction: the overall direction should roughly match
+  const userDx=endUser.x-userPts[0].x;
+  const userDy=endUser.y-userPts[0].y;
+  const expDx=endExp.x-expectedPts[0].x;
+  const expDy=endExp.y-expectedPts[0].y;
+  const dot=userDx*expDx+userDy*expDy;
+  if(dot<0)return false; // drawn in opposite direction
+
+  // Check average distance of user points to path
+  let totalDist=0;
+  const sampleStep=Math.max(1,Math.floor(userPts.length/20));
+  let sampleCount=0;
+  for(let i=0;i<userPts.length;i+=sampleStep){
+    const up=userPts[i];
+    let minD=Infinity;
+    for(let j=0;j<expectedPts.length;j++){
+      const d=Math.hypot(up.x-expectedPts[j].x,up.y-expectedPts[j].y);
+      if(d<minD)minD=d;
+    }
+    totalDist+=minD;
+    sampleCount++;
+  }
+  const avgDist=totalDist/sampleCount;
+  return avgDist<35; // tolerance
+}
+
+// Load character strokes
+async function loadWriteChar(){
+  const allSingles=[...allCharsFlat('hiragana'),...allCharsFlat('katakana')].filter(k=>k.ch.length===1);
+  wChar=allSingles[Math.floor(Math.random()*allSingles.length)];
+  wStrokeIdx=0;
+  wCompleted=false;
+  wStrokes=[];
+  wSamplePoints=[];
+
+  document.getElementById('writeCharInfo').textContent=wChar.ch+' — '+wChar.rm;
+  document.getElementById('writeStrokeCount').textContent='Loading...';
+  document.getElementById('writeHint').textContent='';
+  redrawCanvas();
+  renderGhostSVG();
+
+  // Fetch KanjiVG
+  const code=wChar.ch.codePointAt(0).toString(16).padStart(5,'0');
+  try{
+    let svgText;
+    if(_svgCache[code]){
+      svgText=_svgCache[code];
+    } else {
+      const resp=await fetch(`https://raw.githubusercontent.com/KanjiVG/kanjivg/master/kanji/${code}.svg`);
+      if(!resp.ok)throw new Error('Not found');
+      svgText=await resp.text();
+      _svgCache[code]=svgText;
+    }
+
+    const parser=new DOMParser();
+    const doc=parser.parseFromString(svgText,'image/svg+xml');
+    const paths=doc.querySelectorAll('path[id*="-s"]');
+    wStrokes=[...paths].map(p=>p.getAttribute('d'));
+
+    if(wStrokes.length){
+      prepareCurrentStroke();
+    }
+    document.getElementById('writeStrokeCount').textContent=`Stroke: 0/${wStrokes.length}`;
+    renderGhostSVG();
+  } catch(e){
+    document.getElementById('writeStrokeCount').textContent='Stroke data unavailable';
+  }
+}
+
+function prepareCurrentStroke(){
+  if(wStrokeIdx>=wStrokes.length)return;
+  const {points,length}=sampleSvgPath(wStrokes[wStrokeIdx],50);
+  wSamplePoints=scalePoints(points);
+  wStrokeLen=length;
+  wProgress=0;
+}
+
+// Canvas pointer events
+function getCanvasPos(e){
+  const r=wCanvas.getBoundingClientRect();
+  return {x:(e.clientX-r.left)*wSize/r.width, y:(e.clientY-r.top)*wSize/r.height};
+}
+
+wCanvas.addEventListener('pointerdown',e=>{
+  if(wCompleted)return;
+  e.preventDefault();
+  wDrawing=true;
+  wUserPoints=[];
+  const p=getCanvasPos(e);
+  wUserPoints.push(p);
+});
+
+// Helper: check distance of point to nearest expected path point
+function nearestPathDist(pt,expectedPts){
+  let minD=Infinity;
+  for(const ep of expectedPts){const d=Math.hypot(pt.x-ep.x,pt.y-ep.y);if(d<minD)minD=d;}
+  return minD;
+}
+
+wCanvas.addEventListener('pointermove',e=>{
+  if(!wDrawing||wCompleted)return;
+  e.preventDefault();
+  const p=getCanvasPos(e);
+  wUserPoints.push(p);
+
+  // No visible ink while drawing — instead, the glyph itself fills in with
+  // blue as the user traces along the correct path.
+  if(wSamplePoints.length){
+    let bestIdx=-1,bestD=Infinity;
+    for(let i=0;i<wSamplePoints.length;i++){
+      const d=Math.hypot(p.x-wSamplePoints[i].x,p.y-wSamplePoints[i].y);
+      if(d<bestD){bestD=d;bestIdx=i;}
+    }
+    if(bestD<30){
+      const frac=bestIdx/(wSamplePoints.length-1);
+      if(frac>wProgress){
+        wProgress=frac;
+        renderGhostSVG();
+      }
+    }
+  }
+});
+
+window.addEventListener('pointerup',()=>{
+  if(!wDrawing)return;
+  wDrawing=false;
+  if(wCompleted||!wStrokes.length)return;
+
+  // Validate the stroke
+  const ok=validateStroke(wUserPoints,wSamplePoints);
+  if(ok){
+    // Draw completed stroke in blue
+    drawCompletedStroke(wStrokes[wStrokeIdx]);
+    wStrokeIdx++;
+    document.getElementById('writeStrokeCount').textContent=`Stroke: ${wStrokeIdx}/${wStrokes.length}`;
+    document.getElementById('writeHint').textContent='';
+
+    if(wStrokeIdx>=wStrokes.length){
+      // All strokes done!
+      wCompleted=true;
+      document.getElementById('writeHint').innerHTML='<span class="write-success">✅ Complete! Well done!</span>';
+      speak(wChar.ch);
+      // Auto next after delay
+      setTimeout(()=>{
+        if(wCompleted) loadWriteChar();
+      },2000);
+    } else {
+      prepareCurrentStroke();
+    }
+    // Redraw ghost to update highlighting
+    renderGhostSVG();
+  } else {
+    // Wrong — clear the user's attempt and show hint
+    redrawCanvas();
+    // Re-draw all previously completed strokes
+    for(let i=0;i<wStrokeIdx;i++) drawCompletedStroke(wStrokes[i]);
+    wProgress=0;
+    renderGhostSVG();
+    document.getElementById('writeHint').textContent=`Try again — follow stroke ${wStrokeIdx+1} (highlighted in red)`;
+  }
+});
+
+// Buttons
+document.getElementById('writeNewBtn').onclick=loadWriteChar;
+document.getElementById('writeClearBtn').onclick=()=>{
+  wStrokeIdx=0;wCompleted=false;
+  if(wStrokes.length)prepareCurrentStroke();
+  redrawCanvas();renderGhostSVG();
+  document.getElementById('writeStrokeCount').textContent=`Stroke: 0/${wStrokes.length}`;
+  document.getElementById('writeHint').textContent='';
+};
+document.getElementById('writeSpeakBtn').onclick=()=>{if(wChar)speak(wChar.ch);};
+document.getElementById('writeHintBtn').onclick=()=>{
+  if(wCompleted||!wStrokes.length||wStrokeIdx>=wStrokes.length)return;
+  // Flash-animate the current stroke
+  const {points}=sampleSvgPath(wStrokes[wStrokeIdx],40);
+  const scaled=scalePoints(points);
+  if(!scaled.length)return;
+  wCtx.strokeStyle='rgba(224,85,69,0.4)';
+  wCtx.lineWidth=8;
+  wCtx.lineCap='round';
+  wCtx.lineJoin='round';
+  wCtx.beginPath();
+  wCtx.moveTo(scaled[0].x,scaled[0].y);
+  for(let i=1;i<scaled.length;i++) wCtx.lineTo(scaled[i].x,scaled[i].y);
+  wCtx.stroke();
+  // Fade it out
+  setTimeout(()=>{
+    redrawCanvas();
+    for(let i=0;i<wStrokeIdx;i++) drawCompletedStroke(wStrokes[i]);
+  },800);
+};
+
+/* ================================================================
    INIT
    ================================================================ */
 renderQuizSetup();
+loadWriteChar();
+initNavLabels();
 </script>
 </body>
 </html>
