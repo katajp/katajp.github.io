@@ -1,0 +1,21 @@
+/* ===== CHAR DETAIL MODAL ===== */
+.char-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;
+  animation:fadeIn .2s ease;backdrop-filter:blur(4px);}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.char-modal{background:var(--bg2);border-radius:var(--r-l);padding:28px;min-width:300px;max-width:400px;
+  box-shadow:var(--shadow-l);border:1px solid var(--border);animation:modalPop .3s var(--spring);position:relative;}
+@keyframes modalPop{from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);}}
+.char-modal-close{position:absolute;top:12px;right:14px;background:var(--bg3);border:1px solid var(--border);
+  border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:14px;display:flex;align-items:center;
+  justify-content:center;color:var(--ink2);transition:all .15s var(--ease);font-family:var(--font);}
+.char-modal-close:hover{background:var(--bad-bg);color:var(--bad);}
+.char-modal-char{font-size:100px;font-family:var(--font-jp);text-align:center;line-height:1.1;margin-bottom:8px;}
+.char-modal-romaji{text-align:center;font-size:24px;font-weight:800;color:var(--hira);margin-bottom:16px;}
+.char-modal-romaji.kata-rm{color:var(--kata);}
+.char-modal-stroke{text-align:center;margin-bottom:12px;}
+.char-modal-stroke svg{background:var(--bg3);border-radius:var(--r-m);border:1px solid var(--border);}
+.char-modal-listen{display:flex;justify-content:center;}
+.char-modal-listen button{padding:8px 20px;border-radius:var(--r-full);border:none;background:var(--warn);
+  color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:var(--font);transition:all .15s var(--ease);}
+.char-modal-listen button:hover{opacity:.9;transform:translateY(-1px);}
+
