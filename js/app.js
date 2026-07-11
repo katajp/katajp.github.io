@@ -34,3 +34,13 @@ if(savedVer !== APP_VERSION) {
   console.log("Upgraded to " + APP_VERSION + ", cleared incompatible legacy sessions.");
   location.reload();
 }
+
+/* Service Worker Registration for PWA */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("./sw.js")
+      .then((reg) => console.log("Service Worker registered successfully:", reg.scope))
+      .catch((err) => console.log("Service Worker registration failed:", err));
+  });
+}
