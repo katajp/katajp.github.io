@@ -30,8 +30,8 @@ function renderQuizSetup(){
     const sc=document.createElement("div");sc.className="card";
     sc.innerHTML='<div class="card-title"><span class="ico">📁</span> Saved Sessions</div>';
     sessions.forEach((sess,idx)=>{
-      const totalQ=STAGES.length*Q_PER_STAGE;
-      const answered=(sess.stageIdx*Q_PER_STAGE)+sess.questionIdx;
+      const totalQ=getKanaTotalQ(sess.charCount);
+      const answered=getKanaGlobalQ(sess.stageIdx,sess.questionIdx,sess.charCount);
       const pct=Math.round(answered/totalQ*100);
       const completed=sess.stageIdx>=STAGES.length;
       const div=document.createElement("div");div.className="saved-card";

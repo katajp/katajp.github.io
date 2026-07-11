@@ -13,3 +13,24 @@ if(location.hash){
     switchTab(h);
   }
 }
+
+/* Offline blocker */
+function checkOffline(){
+  const overlay=document.getElementById("offlineOverlay");
+  if(overlay){
+    overlay.style.display=navigator.onLine?"none":"flex";
+  }
+}
+window.addEventListener("online", checkOffline);
+window.addEventListener("offline", checkOffline);
+checkOffline();
+
+/* Version Migration */
+const savedVer = localStorage.getItem("kp-version");
+if(savedVer !== APP_VERSION) {
+  localStorage.removeItem("kp-sessions");
+  localStorage.removeItem("kp-vocab-sessions");
+  localStorage.setItem("kp-version", APP_VERSION);
+  console.log("Upgraded to " + APP_VERSION + ", cleared incompatible legacy sessions.");
+  location.reload();
+}

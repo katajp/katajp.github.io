@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kana & Vocabulary Practice</title>
+<title>&nbsp;</title>
 <meta name="description" content="Master Japanese Hiragana, Katakana, and core vocabulary with active recall quizzes and progress tracking.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
@@ -16,11 +16,15 @@
 <link rel="stylesheet" href="css/write.css">
 </head>
 <body>
+<div id="offlineOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);z-index:9999;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;">
+  <div style="font-size:48px;margin-bottom:16px;">🌐</div>
+  <div style="font-size:24px;font-weight:700;margin-bottom:8px;">No Internet Connection</div>
+  <div style="color:var(--ink2);">Please connect to the internet to use this application.</div>
+</div>
 <div class="wrap">
 
 <header class="hdr">
   <div id="versionBadge" style="position:absolute;top:4px;right:0;font-size:10px;color:var(--ink3);opacity:.6;"></div>
-  <h1>Kana &amp; Vocabulary Practice</h1>
   <div class="hdr-buttons">
     <button class="theme-btn" id="langToggle">🇺🇸 EN</button>
     <button class="theme-btn" id="themeToggle">🌙 Dark</button>
@@ -143,6 +147,9 @@
 <script src="js/components/timer.js"></script>
 <script src="js/components/dialog.js"></script>
 
+<!-- ui components / modals -->
+<script src="js/ui/modal.js"></script>
+
 <!-- quiz engine (kana) -->
 <script src="js/quiz/weighted.js"></script>
 <script src="js/quiz/review.js"></script>
@@ -164,7 +171,6 @@
 
 <!-- ui -->
 <script src="js/ui/chart.js"></script>
-<script src="js/ui/modal.js"></script>
 <script src="js/ui/progress.js"></script>
 <script src="js/ui/write.js"></script>
 <script src="js/ui/navigation.js"></script>

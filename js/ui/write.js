@@ -223,62 +223,14 @@ function getCanvasPos(e){
   return {x:(clientX-r.left)*wSize/r.width, y:(clientY-r.top)*wSize/r.height};
 }
 
-wCanvas.addEventListener('pointerdown',e=>{
+function qHandleDown(e) {
   if(wCompleted)return;
-  e.preventDefault();
-  wCanvas.setPointerCapture(e.pointerId);
   wDrawing=true;
   wUserPoints=[];
-  const p=getCanvasPos(e);
-  wUserPoints.push(p);
-});
-
-wCanvas.addEventListener('pointermove',e=>{
+  wUserPoints.push(getCanvasPos(e));
+}
+function qHandleMove(e) {
   if(!wDrawing||wCompleted)return;
-  e.preventDefault();
-  const p=getCanvasPos(e);
-  wUserPoints.push(p);
-
-  // Progressive trace highlight logic
-  if(wSamplePoints.length){
-    let bestIdx=-1,bestD=Infinity;
-    for(let i=0;i<wSamplePoints.length;i++){
-      const d=Math.hypot(p.x-wSamplePoints[i].x,p.y-wSamplePoints[i].y);
-      if(d<bestD){bestD=d;bestIdx=i;}
-    }
-    if(bestD<30){
-      const frac=bestIdx/(wSamplePoints.length-1);
-      if(frac>wProgress){
-        wProgress=frac;
-        renderGhostSVG();
-      }
-    }
-  }
-});
-
-wCanvas.addEventListener('pointerup',e=>{
-  if(!wDrawing)return;
-  wDrawing=false;
-  wCanvas.releasePointerCapture(e.pointerId);
-  if(wCompleted||!wStrokes.length)return;
-
-  const ok=validateStroke(wUserPoints,wSamplePoints);
-  handleStrokeResult(ok);
-});
-
-/* Touch event fallback listeners with passive: false to disable viewport scrolling while tracing */
-wCanvas.addEventListener('touchstart', e => {
-  if(wCompleted)return;
-  e.preventDefault();
-  wDrawing=true;
-  wUserPoints=[];
-  const p=getCanvasPos(e);
-  wUserPoints.push(p);
-}, { passive: false });
-
-wCanvas.addEventListener('touchmove', e => {
-  if(!wDrawing||wCompleted)return;
-  e.preventDefault();
   const p=getCanvasPos(e);
   wUserPoints.push(p);
 
@@ -296,16 +248,24 @@ wCanvas.addEventListener('touchmove', e => {
       }
     }
   }
-}, { passive: false });
-
-wCanvas.addEventListener('touchend', e => {
+}
+function qHandleUp(e) {
   if(!wDrawing)return;
   wDrawing=false;
   if(wCompleted||!wStrokes.length)return;
-
   const ok=validateStroke(wUserPoints,wSamplePoints);
   handleStrokeResult(ok);
-});
+}
+
+wCanvas.addEventListener('mousedown', qHandleDown);
+wCanvas.addEventListener('mousemove', qHandleMove);
+wCanvas.addEventListener('mouseup', qHandleUp);
+wCanvas.addEventListener('mouseleave', qHandleUp);
+
+wCanvas.addEventListener('touchstart', e => { e.preventDefault(); qHandleDown(e); }, { passive: false });
+wCanvas.addEventListener('touchmove', e => { e.preventDefault(); qHandleMove(e); }, { passive: false });
+wCanvas.addEventListener('touchend', e => { e.preventDefault(); qHandleUp(e); }, { passive: false });
+wCanvas.addEventListener('touchcancel', e => { e.preventDefault(); qHandleUp(e); }, { passive: false });
 
 function handleStrokeResult(ok){
   if(ok){

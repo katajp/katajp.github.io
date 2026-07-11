@@ -40,7 +40,7 @@ async function fetchJlptLevelWords(levelLabel){
     const resp=await fetch(JLPT_VOCAB_API_ENDPOINT+"?level="+level);
     if(!resp.ok)throw new Error("JLPT vocab API request failed: "+resp.status);
     const data=await resp.json();
-    const raw=data.words||[];
+    const raw=Array.isArray(data)?data:(data.words||[]);
     const words=raw
       .filter(w=>w.word&&w.meaning)
       .map(w=>({

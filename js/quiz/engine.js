@@ -7,9 +7,10 @@ function renderQuizUI(){
 
   const s=activeSession;
   const stg=STAGES[Math.min(s.stageIdx,STAGES.length-1)];
-  const totalQ=STAGES.length*Q_PER_STAGE;
-  const globalQ=s.stageIdx*Q_PER_STAGE+s.questionIdx;
+  const totalQ=getKanaTotalQ(s.charCount);
+  const globalQ=getKanaGlobalQ(s.stageIdx,s.questionIdx,s.charCount);
   const globalPct=Math.round(globalQ/totalQ*100);
+  const currentStageTotal=getKanaStageQCount(s.stageIdx,s.charCount);
 
   // Top bar
   const top=document.createElement("div");top.className="card";
@@ -19,7 +20,7 @@ function renderQuizUI(){
       <button class="qa-exit" id="exitBtn">✕ Exit</button>
     </div>
     <div class="qa-progress">
-      <div class="qa-plabel"><span>Stage ${s.stageIdx+1}/${STAGES.length} — Question ${s.questionIdx}/${Q_PER_STAGE}</span><span>${globalPct}%</span></div>
+      <div class="qa-plabel"><span>Stage ${s.stageIdx+1}/${STAGES.length} — Question ${s.questionIdx}/${currentStageTotal}</span><span>${globalPct}%</span></div>
       <div class="qa-bar-out"><div class="qa-bar-in" style="width:${globalPct}%"></div></div>
     </div>
     <div class="qa-toast" id="qToast"></div>
@@ -96,6 +97,82 @@ function newQuizQuestion(){
   if(s.stageIdx>=STAGES.length){renderQuizUI();return;}
   const stage=STAGES[s.stageIdx];
   const pool=activePool;
+  const area=document.getElementById("qaArea");
+  area.innerHTML="";
+
+  if(stage.id==="intro"){
+    const correct=pool[s.questionIdx % pool.length];
+    
+    // Generate 4 options
+    const optPool=pool.length>=4?pool:ALL_KANA;
+    let opts=[correct];
+    while(opts.length<4){
+      const c=optPool[Math.floor(Math.random()*optPool.length)];
+      if(!opts.some(o=>o.rm===c.rm))opts.push(c);
+    }
+    shuffleArr(opts);
+
+    const d=document.createElement("div");d.className="q-char";d.textContent=correct.ch;
+    area.appendChild(d);
+    
+    const info=document.createElement("div");info.style.cssText="font-size:13px;color:var(--ink3);text-align:center;margin-bottom:12px;";
+    info.textContent="Learn this character, then click the highlighted answer to continue:";
+    area.appendChild(info);
+
+    const w=document.createElement("div");w.className="q-grid";
+    opts.forEach(opt=>{
+      const b=document.createElement("div");b.className="q-opt";
+      b.textContent=opt.rm;
+      if(opt.rm===correct.rm){
+        b.classList.add("correct");
+        b.onclick=()=>{
+          if(answeredLock)return;answeredLock=true;
+          finishQ(true,correct.ch);
+        };
+      } else {
+        b.style.opacity="0.5";
+      }
+      w.appendChild(b);
+    });
+    area.appendChild(w);
+    speak(correct.ch);
+    return;
+  }
+
+  // Mixed Test stage selection
+  if(stage.id==="test"){
+    const formats=["mc", "rev", "type", "listen", "match", "write"];
+    const randomFormat = formats[Math.floor(Math.random()*formats.length)];
+
+    if(randomFormat==="match"){ renderMatchQ(pool); return; }
+    if(randomFormat==="write"){ renderWriteQ(pool); return; }
+
+    const correct=weightedPick(pool);
+    const optPool=pool.length>=4?pool:ALL_KANA;
+    let opts=[correct];
+
+    const confused=Object.entries(confusion[correct.ch]||{}).sort((a,b)=>b[1]-a[1]).map(([ch])=>ch);
+    confused.forEach(ch=>{if(opts.length>=4)return;const f=optPool.find(o=>o.ch===ch);if(f&&!opts.some(o=>o.ch===f.ch))opts.push(f);});
+    while(opts.length<4){const c=optPool[Math.floor(Math.random()*optPool.length)];const key=randomFormat==="rev"?c.ch:c.rm;if(!opts.some(o=>(randomFormat==="rev"?o.ch:o.rm)===key))opts.push(c);}
+    shuffleArr(opts);
+
+    const fb=document.createElement("div");fb.className="feedback";fb.id="qFb";
+
+    if(randomFormat==="mc"){
+      renderReadStage(area,correct,opts);
+    } else if(randomFormat==="rev"){
+      renderRecallStage(area,correct,opts);
+    } else if(randomFormat==="type"){
+      renderTypingStage(area,fb,correct);
+    } else if(randomFormat==="listen"){
+      renderListeningStage(area,correct,opts);
+    }
+    area.appendChild(fb);
+    answeredLock=false;
+    return;
+  }
+
+  // Individual stages 1-6
   if(stage.id==="match"){renderMatchQ(pool);return;}
   if(stage.id==="write"){renderWriteQ(pool);return;}
 
@@ -103,14 +180,11 @@ function newQuizQuestion(){
   const optPool=pool.length>=4?pool:ALL_KANA;
   let opts=[correct];
 
-  // prefer confused chars as distractors
   const confused=Object.entries(confusion[correct.ch]||{}).sort((a,b)=>b[1]-a[1]).map(([ch])=>ch);
   confused.forEach(ch=>{if(opts.length>=4)return;const f=optPool.find(o=>o.ch===ch);if(f&&!opts.some(o=>o.ch===f.ch))opts.push(f);});
   while(opts.length<4){const c=optPool[Math.floor(Math.random()*optPool.length)];const key=stage.id==="rev"?c.ch:c.rm;if(!opts.some(o=>(stage.id==="rev"?o.ch:o.rm)===key))opts.push(c);}
   shuffleArr(opts);
 
-  const area=document.getElementById("qaArea");
-  area.innerHTML="";
   const fb=document.createElement("div");fb.className="feedback";fb.id="qFb";
 
   if(stage.id==="mc"){
@@ -162,9 +236,11 @@ function finishQ(ok,correct){
   recordResult(correct.ch,ok);
   const s=activeSession;
   if(ok){
-    s.score+=10;s.streak++;
     s.questionIdx++;
-    if(s.questionIdx>=Q_PER_STAGE){
+    s.streak++;
+    s.score+=10;
+    const stageTotalQ=getKanaStageQCount(s.stageIdx,s.charCount);
+    if(s.questionIdx>=stageTotalQ){
       // Stage complete
       if(!s.stagesCompleted.includes(STAGES[s.stageIdx].id))s.stagesCompleted.push(STAGES[s.stageIdx].id);
       const finished=STAGES[s.stageIdx].name;
