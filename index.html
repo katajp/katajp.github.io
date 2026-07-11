@@ -331,6 +331,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:10
   .char-modal{min-width:auto;margin:16px;}
   .char-modal-char{font-size:72px;}
   .write-canvas-bg,.write-canvas-wrap{width:280px;height:280px;}
+  .theme-btn{padding:6px 10px;font-size:11px;}
+  #langToggle{right:75px;}
 }
 </style>
 </head>
@@ -570,30 +572,33 @@ document.querySelectorAll(".nav-btn").forEach(t=>{
 });
 
 /* ================================================================
-   TTS — prefer male Japanese voice
+   TTS — browser's built-in Japanese voice (prefers Google's, if present)
+   ================================================================
+   No settings needed: this just asks the browser for its Japanese
+   voices and prefers one made by Google (e.g. "Google 日本語" on
+   Chrome/Android), falling back to whatever Japanese voice is
+   available on the device.
    ================================================================ */
-let _maleVoice=null;
+let _jaVoice=null;
 let _voicesLoaded=false;
-function loadMaleVoice(){
+
+function loadJaVoice(){
   const voices=speechSynthesis.getVoices();
   if(!voices.length)return;
   _voicesLoaded=true;
-  // Prefer male Japanese voices
   const jaVoices=voices.filter(v=>v.lang&&v.lang.startsWith('ja'));
-  _maleVoice=jaVoices.find(v=>/male|otoko|男/i.test(v.name))
-    ||jaVoices.find(v=>!/female|onna|女|haruka|kyoko|o-ren/i.test(v.name))
-    ||jaVoices[0]||null;
+  _jaVoice=jaVoices.find(v=>/google/i.test(v.name))||jaVoices[0]||null;
 }
-if(speechSynthesis.onvoiceschanged!==undefined) speechSynthesis.onvoiceschanged=loadMaleVoice;
-loadMaleVoice();
+if(speechSynthesis.onvoiceschanged!==undefined) speechSynthesis.onvoiceschanged=loadJaVoice;
+loadJaVoice();
 
 function speak(t){
   try{
     speechSynthesis.cancel();
-    if(!_voicesLoaded)loadMaleVoice();
+    if(!_voicesLoaded)loadJaVoice();
     const u=new SpeechSynthesisUtterance(t);
     u.lang='ja-JP'; u.rate=0.85;
-    if(_maleVoice) u.voice=_maleVoice;
+    if(_jaVoice) u.voice=_jaVoice;
     speechSynthesis.speak(u);
   }catch(e){}
 }
@@ -1331,8 +1336,14 @@ function finishQ(ok,correct){
    MATCHING
    ================================================================ */
 function renderMatchQ(pool){
-  const src=pool.length>=6?pool:ALL_KANA;
-  const chosen=shuffleArr([...src]).slice(0,6);
+  // Always use the user's selected characters first; only pad with extra
+  // (unselected) kana if the selection is smaller than the 6 needed for the grid.
+  let chosenSource=[...pool];
+  if(chosenSource.length<6){
+    const extra=shuffleArr(ALL_KANA.filter(k=>!chosenSource.some(c=>c.ch===k.ch)));
+    while(chosenSource.length<6 && extra.length)chosenSource.push(extra.pop());
+  }
+  const chosen=shuffleArr([...chosenSource]).slice(0,6);
   const left=shuffleArr(chosen.map((k,i)=>({...k,pair:i})));
   const right=shuffleArr(chosen.map((k,i)=>({...k,pair:i})));
   const area=document.getElementById("qaArea");
@@ -1405,7 +1416,7 @@ function renderMatchQ(pool){
 function renderWriteQ(pool){
   const singles=pool.filter(k=>k.ch.length===1);
   if(!singles.length){finishQ(true,pool[0]);return;}
-  const correct=weightedPick(singles.length>=4?singles:[...singles,...ALL_KANA.filter(k=>k.ch.length===1)]);
+  const correct=weightedPick(singles);
 
   const area=document.getElementById("qaArea");
   area.innerHTML="";
@@ -1808,13 +1819,6 @@ wCanvas.addEventListener('pointerdown',e=>{
   const p=getCanvasPos(e);
   wUserPoints.push(p);
 });
-
-// Helper: check distance of point to nearest expected path point
-function nearestPathDist(pt,expectedPts){
-  let minD=Infinity;
-  for(const ep of expectedPts){const d=Math.hypot(pt.x-ep.x,pt.y-ep.y);if(d<minD)minD=d;}
-  return minD;
-}
 
 wCanvas.addEventListener('pointermove',e=>{
   if(!wDrawing||wCompleted)return;
