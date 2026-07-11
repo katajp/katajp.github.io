@@ -340,7 +340,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:10
 <div class="wrap">
 
 <header class="hdr">
-  <div style="position:absolute;top:4px;right:0;font-size:10px;color:var(--ink3);opacity:.6;">v0.25 Test</div>
+  <div style="position:absolute;top:4px;right:0;font-size:10px;color:var(--ink3);opacity:.6;">v0.26 Test</div>
   <button class="theme-btn" id="langToggle" style="right:110px;">🇺🇸 EN</button>
   <button class="theme-btn" id="themeToggle">🌙 Dark</button>
 </header>
@@ -1395,7 +1395,8 @@ function renderMatchQ(pool){
         if(dz&&!dz.classList.contains("matched")){
           const ok=dz.dataset.pair===chip.dataset.pair;
           if(ok){chip.classList.add("matched");dz.classList.add("matched");recordResult(chip.textContent,true);matched++;
-            if(matched===6){
+            speak(chip.textContent);
+            if(matched===chosen.length){
               const s=activeSession;s.score+=30;s.streak++;
               s.questionIdx++;
               if(s.questionIdx>=Q_PER_STAGE){
