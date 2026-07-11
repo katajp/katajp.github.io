@@ -1,0 +1,89 @@
+
+
+/* ===== TOKENS ===== */
+:root {
+  --bg: #faf7f2;
+  --bg2: #ffffff;
+  --bg3: #f3ede4;
+  --glass: rgba(255,255,255,0.72);
+  --ink: #1a1714;
+  --ink2: #6b6359;
+  --ink3: #9e9588;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.14);
+  --hira: #2d8a6e;
+  --hira-bg: #e8f5ef;
+  --hira-glow: rgba(45,138,110,0.15);
+  --kata: #c06030;
+  --kata-bg: #fdf0e8;
+  --kata-glow: rgba(192,96,48,0.15);
+  --accent: #e05545;
+  --accent-bg: #fdeeed;
+  --good: #2d8a4e;
+  --good-bg: #e6f5ec;
+  --bad: #d44040;
+  --bad-bg: #fce8e8;
+  --warn: #c98a2f;
+  --shadow-s: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-m: 0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-l: 0 10px 40px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+  --r-s: 8px; --r-m: 14px; --r-l: 20px; --r-xl: 28px; --r-full: 999px;
+  --font: 'Inter', system-ui, sans-serif;
+  --font-jp: 'Noto Sans JP', sans-serif;
+  --ease: cubic-bezier(0.4,0,0.2,1);
+  --spring: cubic-bezier(0.34,1.56,0.64,1);
+}
+body.dark {
+  --bg: #0f0f13; --bg2: #1a1a22; --bg3: #242430;
+  --glass: rgba(26,26,34,0.82);
+  --ink: #eae6e0; --ink2: #9a9590; --ink3: #6b665f;
+  --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.12);
+  --hira: #3cc98e; --hira-bg: rgba(60,201,142,0.1); --hira-glow: rgba(60,201,142,0.12);
+  --kata: #e8884a; --kata-bg: rgba(232,136,74,0.1); --kata-glow: rgba(232,136,74,0.12);
+  --accent: #ff6b5a; --accent-bg: rgba(255,107,90,0.1);
+  --good: #4acc7a; --good-bg: rgba(74,204,122,0.1);
+  --bad: #f06060; --bad-bg: rgba(240,96,96,0.1);
+  --shadow-s: 0 1px 3px rgba(0,0,0,0.2);
+  --shadow-m: 0 4px 16px rgba(0,0,0,0.25);
+  --shadow-l: 0 10px 40px rgba(0,0,0,0.35);
+}
+
+
+/* ===== RESET ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:100vh;
+  transition:background .3s var(--ease),color .3s var(--ease);-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+
+
+/* ===== CARD ===== */
+.card{background:var(--bg2);border-radius:var(--r-l);padding:20px;border:1px solid var(--border);
+  box-shadow:var(--shadow-s);margin-bottom:14px;transition:box-shadow .3s var(--ease);}
+.card:hover{box-shadow:var(--shadow-m);}
+.card-title{font-size:15px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.card-title .ico{font-size:18px;}
+
+
+/* ===== PANELS ===== */
+.panel{display:none;animation:fadeUp .25s ease;}
+.panel.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:600px){
+  .nav{gap:2px;padding:3px;}
+  .nav-btn{padding:8px 14px;font-size:12px;}
+  .q-char{font-size:60px;padding:16px 36px;}
+  .q-romaji{font-size:28px;padding:16px 36px;}
+  .q-grid{max-width:100%;}
+  .chart-split{flex-direction:column;}
+  .chart-dual{flex-direction:column;}
+  .kcell{min-width:42px;padding:5px 3px;}
+  .kcell .ch{font-size:17px;}
+  .qs-chip{padding:6px 10px;}
+  .char-modal{min-width:auto;margin:16px;}
+  .char-modal-char{font-size:72px;}
+  .write-canvas-bg,.write-canvas-wrap{width:280px;height:280px;}
+  .theme-btn{padding:6px 10px;font-size:11px;}
+  #langToggle{right:75px;}
+}

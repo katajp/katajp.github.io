@@ -1,0 +1,39 @@
+/* ===== PROGRESS CHART ===== */
+.chart-split{display:flex;gap:20px;flex-wrap:wrap;}
+.chart-side{flex:1;min-width:260px;}
+.chart-side-title{font-size:14px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.chart-side.hira .chart-side-title{color:var(--hira);}
+.chart-side.kata .chart-side-title{color:var(--kata);}
+.chart-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;font-weight:500;}
+.chart-row .lbl{width:72px;flex-shrink:0;color:var(--ink3);}
+.chart-bar-o{flex:1;background:var(--bg3);border-radius:var(--r-full);height:10px;overflow:hidden;border:1px solid var(--border);}
+.chart-bar-i{height:100%;border-radius:var(--r-full);transition:width .4s ease;}
+.chart-side.hira .chart-bar-i{background:linear-gradient(90deg,var(--hira),#3cc98e);}
+.chart-side.kata .chart-bar-i{background:linear-gradient(90deg,var(--kata),#e8884a);}
+.chart-row .pct{width:36px;text-align:right;color:var(--ink3);font-weight:600;}
+
+.stat-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;font-weight:500;}
+.stat-row:last-child{border-bottom:none;}
+.stat-row b{font-weight:800;}
+
+.weak-item{display:inline-flex;align-items:center;gap:4px;background:var(--bg3);border-radius:var(--r-s);
+  padding:5px 12px;margin:3px;font-size:14px;font-weight:600;border:1px solid var(--border);}
+.weak-item b{color:var(--bad);}
+
+
+/* ===== COMPLETED BADGE ===== */
+.stage-list{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+.stage-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--r-m);
+  background:var(--bg3);border:1px solid var(--border);font-size:13px;font-weight:600;transition:all .15s var(--ease);}
+.stage-item .s-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:12px;color:#fff;background:var(--ink3);flex-shrink:0;}
+.stage-item .s-num.done{background:var(--good);}
+.stage-item .s-num.current{background:var(--accent);}
+.stage-item .s-name{flex:1;color:var(--ink);}
+.stage-item .s-status{font-size:12px;color:var(--ink3);}
+.stage-item .s-status.done{color:var(--good);}
+.stage-item.clickable{cursor:pointer;}
+.stage-item.clickable:hover{background:var(--hira-bg);border-color:var(--hira);}
+
+.footer{text-align:center;color:var(--ink3);font-size:12px;margin-top:24px;padding:16px;font-weight:500;}
+
