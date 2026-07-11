@@ -1350,14 +1350,17 @@ function finishQ(ok,correct){
    MATCHING
    ================================================================ */
 function renderMatchQ(pool){
-  // Always use the user's selected characters first; only pad with extra
-  // (unselected) kana if the selection is smaller than the 6 needed for the grid.
+  // Use exactly the characters the user selected — don't pad up to a fixed
+  // count. Only pad if the selection is too small to form a match (<2), and
+  // cap if it's very large so the grid stays playable.
+  const MIN_ITEMS=2, MAX_ITEMS=8;
   let chosenSource=[...pool];
-  if(chosenSource.length<6){
+  if(chosenSource.length<MIN_ITEMS){
     const extra=shuffleArr(ALL_KANA.filter(k=>!chosenSource.some(c=>c.ch===k.ch)));
-    while(chosenSource.length<6 && extra.length)chosenSource.push(extra.pop());
+    while(chosenSource.length<MIN_ITEMS && extra.length)chosenSource.push(extra.pop());
   }
-  const chosen=shuffleArr([...chosenSource]).slice(0,6);
+  const count=Math.min(chosenSource.length,MAX_ITEMS);
+  const chosen=shuffleArr([...chosenSource]).slice(0,count);
   const left=shuffleArr(chosen.map((k,i)=>({...k,pair:i})));
   const right=shuffleArr(chosen.map((k,i)=>({...k,pair:i})));
   const area=document.getElementById("qaArea");
