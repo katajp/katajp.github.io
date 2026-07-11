@@ -99,6 +99,7 @@ function newQuizQuestion(){
   const pool=activePool;
   const area=document.getElementById("qaArea");
   area.innerHTML="";
+  answeredLock=false;
 
   if(stage.id==="intro"){
     const correct=pool[s.questionIdx % pool.length];

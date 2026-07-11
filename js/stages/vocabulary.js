@@ -359,10 +359,15 @@ function weightedPickVocab(pool){
 }
 
 function newVocabQuestion(){
+  clearInterval(vocabTimerHandle);
   const s=activeVocabSession;
   if(s.stageIdx>=VOCAB_STAGES.length){renderVocabQuizUI();return;}
   const stage=VOCAB_STAGES[s.stageIdx];
   const pool=activeVocabPool;
+
+  const area=document.getElementById("vqaArea");
+  area.innerHTML="";
+  vocabAnsweredLock=false;
 
   let correct;
   if(stage.id==="vintro"){
@@ -371,34 +376,6 @@ function newVocabQuestion(){
     correct=weightedPickVocab(pool);
   }
 
-  const area=document.getElementById("vqaArea");
-  area.innerHTML="";
-
-  if(stage.id==="vstudy"){
-    renderVocabStudyStage(area,correct);
-    vocabAnsweredLock=false;
-    
-    // Background enrichment for Study stage
-    enrichWord(correct).then(info=>{
-      if(info&&info.example&&info.example.jp){
-        const ex=document.createElement("div");
-        ex.style.cssText="font-size:12px;color:var(--ink3);text-align:center;max-width:320px;margin-top:12px;border-top:1px dashed var(--border);padding-top:12px;width:100%;";
-        const jpDiv=document.createElement("div");
-        jpDiv.style.fontFamily="var(--font-jp)";
-        jpDiv.textContent=info.example.jp;
-        ex.appendChild(jpDiv);
-        if(info.example.en){
-          const enDiv=document.createElement("div");
-          enDiv.textContent=info.example.en;
-          ex.appendChild(enDiv);
-        }
-        const card = area.querySelector(".study-card");
-        if(card) card.appendChild(ex);
-        else area.appendChild(ex);
-      }
-    });
-    return;
-  }
 
   // Mixed Vocab Test Stage
   if(stage.id==="vtest"){
