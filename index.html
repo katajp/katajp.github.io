@@ -340,6 +340,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:10
 <div class="wrap">
 
 <header class="hdr">
+  <div style="position:absolute;top:4px;right:0;font-size:10px;color:var(--ink3);opacity:.6;">v0.25 Test</div>
   <button class="theme-btn" id="langToggle" style="right:110px;">🇺🇸 EN</button>
   <button class="theme-btn" id="themeToggle">🌙 Dark</button>
 </header>
@@ -1089,6 +1090,16 @@ function enterQuiz(){
   renderQuizUI();
 }
 
+function restartCurrentLevel(){
+  const s=activeSession;
+  if(!s)return;
+  s.stageIdx=0;s.questionIdx=0;s.score=0;s.streak=0;s.stagesCompleted=[];
+  saveSessions();
+  savedRealStageIdx=-1;
+  savedRealQuestionIdx=0;
+  renderQuizUI();
+}
+
 function exitQuiz(){
   clearInterval(timerHandle);
   activeSession=null;activeSessionIdx=-1;
@@ -1180,7 +1191,10 @@ function renderQuizUI(){
         <div style="font-size:48px;margin-bottom:12px;">🎉</div>
         <div style="font-size:20px;font-weight:800;margin-bottom:8px;">All Stages Complete!</div>
         <div style="color:var(--ink2);margin-bottom:16px;">Score: ${s.score} • You can redo any stage above.</div>
+        <button class="start-btn" id="restartLevelBtn">🔄 Restart This Level</button>
       </div>`;
+    const rlb=document.getElementById("restartLevelBtn");
+    if(rlb)rlb.onclick=restartCurrentLevel;
   }
 }
 
