@@ -206,15 +206,27 @@ function prepareCurrentStroke(){
   wProgress=0;
 }
 
-// Canvas pointer events
+// Canvas pointer and touch events for full desktop & mobile compatibility
 function getCanvasPos(e){
   const r=wCanvas.getBoundingClientRect();
-  return {x:(e.clientX-r.left)*wSize/r.width, y:(e.clientY-r.top)*wSize/r.height};
+  let clientX, clientY;
+  if(e.touches && e.touches.length){
+    clientX = e.touches[0].clientX;
+    clientY = e.touches[0].clientY;
+  } else if(e.changedTouches && e.changedTouches.length){
+    clientX = e.changedTouches[0].clientX;
+    clientY = e.changedTouches[0].clientY;
+  } else {
+    clientX = e.clientX;
+    clientY = e.clientY;
+  }
+  return {x:(clientX-r.left)*wSize/r.width, y:(clientY-r.top)*wSize/r.height};
 }
 
 wCanvas.addEventListener('pointerdown',e=>{
   if(wCompleted)return;
   e.preventDefault();
+  wCanvas.setPointerCapture(e.pointerId);
   wDrawing=true;
   wUserPoints=[];
   const p=getCanvasPos(e);
@@ -227,8 +239,7 @@ wCanvas.addEventListener('pointermove',e=>{
   const p=getCanvasPos(e);
   wUserPoints.push(p);
 
-  // No visible ink while drawing — instead, the glyph itself fills in with
-  // blue as the user traces along the correct path.
+  // Progressive trace highlight logic
   if(wSamplePoints.length){
     let bestIdx=-1,bestD=Infinity;
     for(let i=0;i<wSamplePoints.length;i++){
@@ -245,13 +256,58 @@ wCanvas.addEventListener('pointermove',e=>{
   }
 });
 
-window.addEventListener('pointerup',()=>{
+wCanvas.addEventListener('pointerup',e=>{
+  if(!wDrawing)return;
+  wDrawing=false;
+  wCanvas.releasePointerCapture(e.pointerId);
+  if(wCompleted||!wStrokes.length)return;
+
+  const ok=validateStroke(wUserPoints,wSamplePoints);
+  handleStrokeResult(ok);
+});
+
+/* Touch event fallback listeners with passive: false to disable viewport scrolling while tracing */
+wCanvas.addEventListener('touchstart', e => {
+  if(wCompleted)return;
+  e.preventDefault();
+  wDrawing=true;
+  wUserPoints=[];
+  const p=getCanvasPos(e);
+  wUserPoints.push(p);
+}, { passive: false });
+
+wCanvas.addEventListener('touchmove', e => {
+  if(!wDrawing||wCompleted)return;
+  e.preventDefault();
+  const p=getCanvasPos(e);
+  wUserPoints.push(p);
+
+  if(wSamplePoints.length){
+    let bestIdx=-1,bestD=Infinity;
+    for(let i=0;i<wSamplePoints.length;i++){
+      const d=Math.hypot(p.x-wSamplePoints[i].x,p.y-wSamplePoints[i].y);
+      if(d<bestD){bestD=d;bestIdx=i;}
+    }
+    if(bestD<30){
+      const frac=bestIdx/(wSamplePoints.length-1);
+      if(frac>wProgress){
+        wProgress=frac;
+        renderGhostSVG();
+      }
+    }
+  }
+}, { passive: false });
+
+wCanvas.addEventListener('touchend', e => {
   if(!wDrawing)return;
   wDrawing=false;
   if(wCompleted||!wStrokes.length)return;
 
-  // Validate the stroke
   const ok=validateStroke(wUserPoints,wSamplePoints);
+  handleStrokeResult(ok);
+});
+
+function handleStrokeResult(ok){
   if(ok){
     // Draw completed stroke in blue
     drawCompletedStroke(wStrokes[wStrokeIdx]);
@@ -282,7 +338,7 @@ window.addEventListener('pointerup',()=>{
     renderGhostSVG();
     document.getElementById('writeHint').textContent=`Try again — follow stroke ${wStrokeIdx+1} (highlighted in red)`;
   }
-});
+}
 
 // Buttons
 document.getElementById('writeNewBtn').onclick=loadWriteChar;

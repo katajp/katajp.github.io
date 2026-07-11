@@ -324,7 +324,43 @@ function newVocabQuestion(){
   if(s.stageIdx>=VOCAB_STAGES.length){renderVocabQuizUI();return;}
   const stage=VOCAB_STAGES[s.stageIdx];
   const pool=activeVocabPool;
-  const correct=weightedPickVocab(pool);
+
+  let correct;
+  if(stage.id==="vstudy"){
+    correct=pool[s.questionIdx % pool.length];
+  } else {
+    correct=weightedPickVocab(pool);
+  }
+
+  const area=document.getElementById("vqaArea");
+  area.innerHTML="";
+
+  if(stage.id==="vstudy"){
+    renderVocabStudyStage(area,correct);
+    vocabAnsweredLock=false;
+    
+    // Background enrichment for Study stage
+    enrichWord(correct).then(info=>{
+      if(info&&info.example&&info.example.jp){
+        const ex=document.createElement("div");
+        ex.style.cssText="font-size:12px;color:var(--ink3);text-align:center;max-width:320px;margin-top:12px;border-top:1px dashed var(--border);padding-top:12px;width:100%;";
+        const jpDiv=document.createElement("div");
+        jpDiv.style.fontFamily="var(--font-jp)";
+        jpDiv.textContent=info.example.jp;
+        ex.appendChild(jpDiv);
+        if(info.example.en){
+          const enDiv=document.createElement("div");
+          enDiv.textContent=info.example.en;
+          ex.appendChild(enDiv);
+        }
+        const card = area.querySelector(".study-card");
+        if(card) card.appendChild(ex);
+        else area.appendChild(ex);
+      }
+    });
+    return;
+  }
+
   const optPool=pool.length>=4?pool:VOCABULARY;
   let opts=[correct];
   while(opts.length<4){
@@ -334,8 +370,6 @@ function newVocabQuestion(){
   }
   shuffleArr(opts);
 
-  const area=document.getElementById("vqaArea");
-  area.innerHTML="";
   const fb=document.createElement("div");fb.className="feedback";fb.id="vqFb";
 
   if(stage.id==="vread"){
@@ -374,6 +408,55 @@ function newVocabQuestion(){
   });
 }
 
+function renderVocabStudyStage(area,correct){
+  const card=document.createElement("div");
+  card.className="study-card";
+  
+  // Word
+  const wordDiv=document.createElement("div");
+  wordDiv.className="study-word";
+  wordDiv.textContent=correct.word;
+  card.appendChild(wordDiv);
+  
+  // Reading
+  const readDiv=document.createElement("div");
+  readDiv.className="study-reading";
+  readDiv.textContent=correct.reading;
+  card.appendChild(readDiv);
+  
+  // Meaning
+  const meanDiv=document.createElement("div");
+  meanDiv.className="study-meaning";
+  const thaiText = correct.meaningTh ? ` (${correct.meaningTh})` : "";
+  meanDiv.textContent=correct.meaning + thaiText;
+  card.appendChild(meanDiv);
+  
+  // Speak button
+  const sb=document.createElement("button");
+  sb.className="speak-btn";
+  sb.textContent="🔊";
+  sb.onclick=()=>speak(correct.reading);
+  card.appendChild(sb);
+  
+  area.appendChild(card);
+  
+  // "Got it!" button
+  const nextBtn=document.createElement("button");
+  nextBtn.className="start-btn";
+  nextBtn.style.marginTop="16px";
+  nextBtn.textContent=lang==='en'?"Got it! ➔":"เข้าใจแล้ว! ➔";
+  nextBtn.onclick=()=>{
+    if(vocabAnsweredLock)return;
+    vocabAnsweredLock=true;
+    nextBtn.style.background="var(--good)";
+    finishVocabQ(true,correct);
+  };
+  area.appendChild(nextBtn);
+  
+  // Speak audio immediately
+  speak(correct.reading);
+}
+
 function buildVocabOpts(opts,keyFn,correct){
   const w=document.createElement("div");w.className="q-grid";
   opts.forEach(o=>{
@@ -406,8 +489,12 @@ function buildVocabOpts(opts,keyFn,correct){
 }
 
 function finishVocabQ(ok,correct){
-  recordVocabResult(correct.word,ok);
   const s=activeVocabSession;
+  const currentStageId = VOCAB_STAGES[s.stageIdx]?.id;
+  /* Study stage doesn't record accuracy stats */
+  if(currentStageId!=="vstudy"){
+    recordVocabResult(correct.word,ok);
+  }
   if(ok){
     s.score+=10;s.streak++;s.questionIdx++;
     if(s.questionIdx>=VOCAB_Q_PER_STAGE){

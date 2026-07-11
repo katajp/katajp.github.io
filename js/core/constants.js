@@ -15,6 +15,7 @@ const Q_PER_STAGE=20;
 
 // Vocabulary practice stages (separate mini-engine from the kana quiz above)
 const VOCAB_STAGES=[
+  {id:"vstudy",name:"Study",desc:"learn the words"},
   {id:"vread",name:"Meaning",desc:"word → meaning"},
   {id:"vrecall",name:"Recall",desc:"meaning → word"},
   {id:"vlisten",name:"Listen",desc:"audio → word"}
