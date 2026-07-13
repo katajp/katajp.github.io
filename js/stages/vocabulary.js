@@ -14,6 +14,7 @@ let vocabPoolLoading=false;
 let activeVocabSession=null;
 let activeVocabSessionIdx=-1;
 let activeVocabPool=[];
+let vocabTimerHandle=null;
 let vocabAnsweredLock=false;
 let savedVocabRealStageIdx=-1;
 let savedVocabRealQuestionIdx=0;
@@ -387,6 +388,10 @@ function newVocabQuestion(){
 
     const optPool=pool.length>=4?pool:VOCABULARY;
     let opts=[correct];
+    /* Prioritize words the user has previously confused with this one,
+       same as the kana quiz's Test stage does. */
+    const confused=Object.entries(vocabConfusion[correct.word]||{}).sort((a,b)=>b[1]-a[1]).map(([w])=>w);
+    confused.forEach(w=>{if(opts.length>=4)return;const f=optPool.find(o=>o.word===w);if(f&&!opts.some(o=>o.word===f.word))opts.push(f);});
     while(opts.length<4){
       const c=optPool[Math.floor(Math.random()*optPool.length)];
       const key=randomFormat==="vrecall"?c.word:c.meaning;
@@ -415,6 +420,11 @@ function newVocabQuestion(){
     vocabAnsweredLock=false;
     return;
   }
+
+  // Individual stages that need their own full-area renderer (same
+  // pattern as the kana quiz engine's match/write dispatch)
+  if(stage.id==="vmatch"){ renderVocabMatchQ(pool); return; }
+  if(stage.id==="vwrite"){ renderVocabWriteQ(pool); return; }
 
   // Fallback for legacy sessions
   const optPool=pool.length>=4?pool:VOCABULARY;
@@ -492,6 +502,8 @@ function newVocabQuestion(){
     const sb=document.createElement("button");sb.className="speak-btn";sb.textContent="🔊";sb.onclick=()=>speak(correct.reading);
     area.appendChild(sb);speak(correct.reading);
     area.appendChild(buildVocabOpts(opts,o=>o.word,correct));
+  } else if(stage.id==="vtype"){
+    renderVocabTypeQ(area,fb,correct);
   }
   area.appendChild(fb);
   vocabAnsweredLock=false;
