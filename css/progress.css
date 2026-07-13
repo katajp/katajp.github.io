@@ -21,19 +21,20 @@
 .weak-item b{color:var(--bad);}
 
 
-/* ===== COMPLETED BADGE ===== */
-.stage-list{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
-.stage-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--r-m);
-  background:var(--bg3);border:1px solid var(--border);font-size:13px;font-weight:600;transition:all .15s var(--ease);}
-.stage-item .s-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:12px;color:#fff;background:var(--ink3);flex-shrink:0;}
-.stage-item .s-num.done{background:var(--good);}
-.stage-item .s-num.current{background:var(--accent);}
-.stage-item .s-name{flex:1;color:var(--ink);}
-.stage-item .s-status{font-size:12px;color:var(--ink3);}
-.stage-item .s-status.done{color:var(--good);}
-.stage-item.clickable{cursor:pointer;}
-.stage-item.clickable:hover{background:var(--hira-bg);border-color:var(--hira);}
+/* ===== STAGE NAVIGATOR (compact "< Stage N >" indicator) ===== */
+.stage-nav{display:flex;align-items:center;gap:10px;margin-top:12px;}
+.stage-nav-arrow{flex-shrink:0;width:38px;height:38px;border-radius:50%;border:1px solid var(--border);
+  background:var(--bg3);color:var(--ink);font-size:18px;font-weight:800;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .15s var(--ease);}
+.stage-nav-arrow:hover:not(:disabled){background:var(--hira-bg);border-color:var(--hira);color:var(--hira);}
+.stage-nav-arrow:disabled{opacity:.35;cursor:default;}
+.stage-nav-info{flex:1;text-align:center;padding:8px 14px;border-radius:var(--r-m);
+  background:var(--bg3);border:1px solid var(--border);}
+.stage-nav-num{font-size:11px;font-weight:700;color:var(--ink3);letter-spacing:.02em;text-transform:uppercase;}
+.stage-nav-name{font-size:15px;font-weight:800;color:var(--ink);margin-top:2px;}
+.stage-nav-status{font-size:11px;font-weight:600;color:var(--ink3);margin-left:6px;}
+.stage-nav-status.done{color:var(--good);}
+.stage-nav-status.current{color:var(--accent);}
 
 .footer{text-align:center;color:var(--ink3);font-size:12px;margin-top:24px;padding:16px;font-weight:500;}
 

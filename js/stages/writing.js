@@ -1,4 +1,4 @@
-// Stage: "Write" — in-quiz KanjiVG stroke tracing (compact version of the ui/write.js practice tab).
+// Stage: "Write" — in-quiz KanjiVG stroke tracing.
 
 function renderWriteQ(pool){
   const singles=pool.filter(k=>k.ch.length===1);

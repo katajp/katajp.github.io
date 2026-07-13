@@ -13,7 +13,6 @@
 <link rel="stylesheet" href="css/modal.css">
 <link rel="stylesheet" href="css/quiz.css">
 <link rel="stylesheet" href="css/progress.css">
-<link rel="stylesheet" href="css/write.css">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2d8a6e">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -40,7 +39,6 @@
   <button class="nav-btn active" data-tab="chart">📖 Chart</button>
   <button class="nav-btn" data-tab="quiz">🎯 Quiz</button>
   <button class="nav-btn" data-tab="vocab">📚 Vocab</button>
-  <button class="nav-btn" data-tab="write">✍️ Write</button>
   <button class="nav-btn" data-tab="progress">📊 Progress</button>
 </nav>
 
@@ -61,29 +59,6 @@
 <div class="panel" id="panel-vocab">
   <div id="vocabSetup" class="quiz-setup"></div>
   <div id="vocabActive" class="quiz-active" style="display:none;"></div>
-</div>
-
-<!-- ===== WRITE ===== -->
-<div class="panel" id="panel-write">
-  <div class="card">
-    <div class="card-title"><span class="ico">✍️</span> Stroke Order Practice</div>
-    <div class="write-wrap">
-      <div class="write-btns">
-        <button class="btn" id="writeNewBtn">🔀 New</button>
-        <button class="btn" id="writeClearBtn" style="background:var(--ink3);">🧹 Clear</button>
-        <button class="btn" id="writeSpeakBtn" style="background:var(--warn);">🔊</button>
-        <button class="btn" id="writeHintBtn" style="background:var(--kata);">💡 Hint</button>
-      </div>
-      <div class="write-canvas-bg">
-        <div class="write-canvas-wrap" id="writeCanvasWrap">
-          <canvas id="writeCanvas" width="300" height="300"></canvas>
-        </div>
-      </div>
-      <div class="write-stroke-count" id="writeStrokeCount">Stroke: 0/0</div>
-      <div class="write-info" id="writeCharInfo">Loading...</div>
-      <div class="write-hint" id="writeHint"></div>
-    </div>
-  </div>
 </div>
 
 <!-- ===== PROGRESS ===== -->
@@ -177,7 +152,6 @@
 <!-- ui -->
 <script src="js/ui/chart.js"></script>
 <script src="js/ui/progress.js"></script>
-<script src="js/ui/write.js"></script>
 <script src="js/ui/navigation.js"></script>
 
 <!-- router (after all render functions it calls are defined) -->

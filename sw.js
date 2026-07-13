@@ -1,4 +1,4 @@
-const CACHE_NAME = "kp-pwa-cache-v2";
+const CACHE_NAME = "kp-pwa-cache-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -9,7 +9,6 @@ const ASSETS = [
   "./css/modal.css",
   "./css/quiz.css",
   "./css/progress.css",
-  "./css/write.css",
   "./js/app.js",
   "./js/core/constants.js",
   "./js/core/utils.js",
@@ -39,7 +38,6 @@ const ASSETS = [
   "./js/ui/chart.js",
   "./js/ui/modal.js",
   "./js/ui/progress.js",
-  "./js/ui/write.js",
   "./js/ui/navigation.js",
   "./js/components/toast.js",
   "./js/components/progressBar.js",

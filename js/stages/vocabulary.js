@@ -272,7 +272,7 @@ function renderVocabQuizUI(){
   el.appendChild(top);
   top.querySelector("#vocabExitBtn").onclick=exitVocabQuiz;
 
-  // Stage list
+  // Stage navigator (compact "< Stage N >" indicator)
   const stageCard=document.createElement("div");stageCard.className="card";
   if(savedVocabRealStageIdx>=0 && s.stageIdx!==savedVocabRealStageIdx){
     const retBtn=document.createElement("button");retBtn.className="btn";retBtn.style.cssText="margin-bottom:12px;background:var(--accent);";
@@ -283,28 +283,39 @@ function renderVocabQuizUI(){
     };
     stageCard.appendChild(retBtn);
   }
-  const stageList=document.createElement("div");stageList.className="stage-list";
-  VOCAB_STAGES.forEach((st,i)=>{
-    const item=document.createElement("div");item.className="stage-item";
-    const done=s.stagesCompleted.includes(st.id);
-    const isRealCurrent=(savedVocabRealStageIdx>=0)?i===savedVocabRealStageIdx:i===s.stageIdx;
-    const isViewing=i===s.stageIdx;
-    let numClass=done?"done":(isRealCurrent||isViewing?"current":"");
-    const statusText=done?(isViewing?"Replaying":"Completed"):(isRealCurrent||isViewing?"In progress":"Locked");
-    item.innerHTML=`
-      <div class="s-num ${numClass}">${done?"✓":(i+1)}</div>
-      <div class="s-name">${st.name} <span style="color:var(--ink3);font-weight:500;font-size:12px;">${st.desc}</span></div>
-      <div class="s-status ${done?"done":""}">${statusText}</div>`;
-    if(done && i!==s.stageIdx){
-      item.classList.add("clickable");
-      item.onclick=()=>{
-        if(savedVocabRealStageIdx<0){ savedVocabRealStageIdx=s.stageIdx; savedVocabRealQuestionIdx=s.questionIdx; }
-        s.stageIdx=i;s.questionIdx=0;saveVocabSessions();renderVocabQuizUI();newVocabQuestion();
-      };
+  const viewIdx=Math.min(s.stageIdx,VOCAB_STAGES.length-1);
+  const maxIdx=Math.min(savedVocabRealStageIdx>=0?savedVocabRealStageIdx:s.stageIdx,VOCAB_STAGES.length-1);
+  const viewStage=VOCAB_STAGES[viewIdx];
+  const allComplete=s.stageIdx>=VOCAB_STAGES.length&&savedVocabRealStageIdx<0;
+  const isRealCurrent=!allComplete&&savedVocabRealStageIdx<0&&viewIdx===maxIdx;
+  const done=s.stagesCompleted.includes(viewStage.id);
+  let statusText,statusClass;
+  if(allComplete){statusText="Completed";statusClass="done";}
+  else if(isRealCurrent){statusText="In progress";statusClass="current";}
+  else if(done){statusText="Replaying";statusClass="done";}
+  else{statusText="Completed";statusClass="done";}
+  const navigateVocabStage=delta=>{
+    const target=viewIdx+delta;
+    if(target<0||target>maxIdx)return;
+    if(target===maxIdx&&savedVocabRealStageIdx>=0){
+      s.stageIdx=savedVocabRealStageIdx;s.questionIdx=savedVocabRealQuestionIdx;savedVocabRealStageIdx=-1;savedVocabRealQuestionIdx=0;
+    } else {
+      if(savedVocabRealStageIdx<0){savedVocabRealStageIdx=Math.min(s.stageIdx,VOCAB_STAGES.length-1);savedVocabRealQuestionIdx=s.questionIdx;}
+      s.stageIdx=target;s.questionIdx=0;
     }
-    stageList.appendChild(item);
-  });
-  stageCard.appendChild(stageList);
+    saveVocabSessions();renderVocabQuizUI();newVocabQuestion();
+  };
+  const stageNav=document.createElement("div");stageNav.className="stage-nav";
+  stageNav.innerHTML=`
+    <button class="stage-nav-arrow" id="vStagePrevBtn" ${viewIdx<=0?"disabled":""}>‹</button>
+    <div class="stage-nav-info">
+      <div class="stage-nav-num">Stage ${viewIdx+1}/${VOCAB_STAGES.length}</div>
+      <div class="stage-nav-name">${viewStage.name} <span class="stage-nav-status ${statusClass}">${statusText}</span></div>
+    </div>
+    <button class="stage-nav-arrow" id="vStageNextBtn" ${viewIdx>=maxIdx?"disabled":""}>›</button>`;
+  stageNav.querySelector("#vStagePrevBtn").onclick=()=>navigateVocabStage(-1);
+  stageNav.querySelector("#vStageNextBtn").onclick=()=>navigateVocabStage(1);
+  stageCard.appendChild(stageNav);
   el.appendChild(stageCard);
 
   const qa=document.createElement("div");qa.className="card";
@@ -625,8 +636,26 @@ function renderVocabWriteQ(pool){
   info.innerHTML=`Trace the characters: <span style="font-family:var(--font-jp);font-size:18px;color:var(--ink);font-weight:700;">${word}</span>`;
   area.appendChild(info);
 
+  // Breadcrumb: shows every character of the word, one at a time in focus —
+  // こ・ん・に・ち・は — so long words don't have to fit in a single frame.
+  const crumb=document.createElement("div");crumb.style.cssText="display:flex;justify-content:center;gap:4px;margin-bottom:12px;font-family:var(--font-jp);";
+  const crumbChars=[...word].map((ch,i)=>{
+    const sp=document.createElement("span");sp.textContent=ch;sp.dataset.idx=i;
+    sp.style.cssText="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:var(--r-s);font-size:16px;font-weight:700;transition:all .2s var(--ease);";
+    crumb.appendChild(sp);return sp;
+  });
+  function updateCrumb(){
+    crumbChars.forEach((sp,i)=>{
+      if(i<charIdx){sp.style.cssText+="color:var(--good);background:var(--good-bg);";}
+      else if(i===charIdx){sp.style.cssText+="color:#fff;background:var(--accent);transform:scale(1.15);";}
+      else{sp.style.cssText+="color:var(--ink3);background:var(--bg3);";}
+    });
+  }
+  area.appendChild(crumb);
+  updateCrumb();
+
   // Canvas
-  const bg=document.createElement("div");bg.style.cssText="width:250px;height:250px;background:var(--bg2);border-radius:var(--r-l);box-shadow:var(--shadow-l);border:1px solid var(--border);position:relative;overflow:hidden;";
+  const bg=document.createElement("div");bg.style.cssText="width:250px;height:250px;background:var(--bg2);border-radius:var(--r-l);box-shadow:var(--shadow-l);border:1px solid var(--border);position:relative;overflow:hidden;transition:opacity .18s var(--ease);";
   const wrap=document.createElement("div");wrap.style.cssText="position:relative;width:250px;height:250px;";
   const canvas=document.createElement("canvas");canvas.width=250;canvas.height=250;
   canvas.style.cssText="position:absolute;top:0;left:0;width:100%;height:100%;cursor:crosshair;touch-action:none;border-radius:var(--r-l);z-index:4;";
@@ -704,6 +733,7 @@ function renderVocabWriteQ(pool){
 
   async function loadNextChar(){
     if(charIdx>=word.length){
+      updateCrumb();
       qDone=true;
       fb.textContent=t('correct');fb.className="feedback good";
       speak(correct.reading);
@@ -711,6 +741,7 @@ function renderVocabWriteQ(pool){
       finishVocabQ(true,correct);
       return;
     }
+    updateCrumb();
     const ch=word[charIdx];
     strokeInfo.textContent=`Loading stroke data for: ${ch}...`;
     try {
@@ -773,7 +804,8 @@ function renderVocabWriteQ(pool){
       strokeInfo.innerHTML=`Character ${charIdx+1}/${word.length} (<span style="font-family:var(--font-jp);font-weight:700;">${ch}</span>) — Stroke: ${qStrokeIdx}/${qStrokes.length}`;
       if(qStrokeIdx>=qStrokes.length){
         charIdx++;
-        setTimeout(loadNextChar, 500);
+        bg.style.opacity="0.15";
+        setTimeout(()=>{loadNextChar();bg.style.opacity="1";}, 500);
       } else {
         qPrepareStroke();
         qRenderGhost();

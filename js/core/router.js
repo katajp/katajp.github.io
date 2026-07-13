@@ -2,7 +2,7 @@
    ROUTER — generic "switch to this panel" logic, decoupled from the
    actual nav bar buttons (those live in js/ui/navigation.js).
    ================================================================ */
-const VALID_TABS=["chart","quiz","vocab","write","progress"];
+const VALID_TABS=["chart","quiz","vocab","progress"];
 function switchTab(tabName){
   if(!VALID_TABS.includes(tabName)) tabName="chart";
   document.querySelectorAll(".nav-btn").forEach(x=>x.classList.remove("active"));

@@ -4,7 +4,6 @@
 document.getElementById("versionBadge").textContent=APP_VERSION;
 renderChart();
 renderQuizSetup();
-loadWriteChar();
 initNavLabels();
 /* Apply initial tab from URL hash, if any */
 if(location.hash){

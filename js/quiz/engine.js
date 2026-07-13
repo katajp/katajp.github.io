@@ -31,7 +31,7 @@ function renderQuizUI(){
   el.appendChild(top);
   top.querySelector("#exitBtn").onclick=exitQuiz;
 
-  // Stage list
+  // Stage navigator (compact "< Stage N >" indicator)
   const stageCard=document.createElement("div");stageCard.className="card";
   // Return to current stage button (shown when replaying a completed stage)
   if(savedRealStageIdx>=0 && s.stageIdx!==savedRealStageIdx){
@@ -43,29 +43,39 @@ function renderQuizUI(){
     };
     stageCard.appendChild(retBtn);
   }
-  const stageList=document.createElement("div");stageList.className="stage-list";
-  STAGES.forEach((st,i)=>{
-    const item=document.createElement("div");item.className="stage-item";
-    const done=s.stagesCompleted.includes(st.id);
-    const isRealCurrent=(savedRealStageIdx>=0)?i===savedRealStageIdx:i===s.stageIdx;
-    const isViewing=i===s.stageIdx;
-    let numClass=done?"done":(isRealCurrent||isViewing?"current":"");
-    const statusText=done?(isViewing?"Replaying":"Completed"):(isRealCurrent||isViewing?"In progress":"Locked");
-    item.innerHTML=`
-      <div class="s-num ${numClass}">${done?"✓":(i+1)}</div>
-      <div class="s-name">${st.name} <span style="color:var(--ink3);font-weight:500;font-size:12px;">${st.desc}</span></div>
-      <div class="s-status ${done?"done":""}">${statusText}</div>`;
-    if(done && i!==s.stageIdx){
-      item.classList.add("clickable");
-      item.onclick=()=>{
-        // Save real position if not already replaying
-        if(savedRealStageIdx<0){ savedRealStageIdx=s.stageIdx; savedRealQuestionIdx=s.questionIdx; }
-        s.stageIdx=i;s.questionIdx=0;saveSessions();renderQuizUI();newQuizQuestion();
-      };
+  const viewIdx=Math.min(s.stageIdx,STAGES.length-1);
+  const maxIdx=Math.min(savedRealStageIdx>=0?savedRealStageIdx:s.stageIdx,STAGES.length-1);
+  const viewStage=STAGES[viewIdx];
+  const allComplete=s.stageIdx>=STAGES.length&&savedRealStageIdx<0;
+  const isRealCurrent=!allComplete&&savedRealStageIdx<0&&viewIdx===maxIdx;
+  const done=s.stagesCompleted.includes(viewStage.id);
+  let statusText,statusClass;
+  if(allComplete){statusText="Completed";statusClass="done";}
+  else if(isRealCurrent){statusText="In progress";statusClass="current";}
+  else if(done){statusText="Replaying";statusClass="done";}
+  else{statusText="Completed";statusClass="done";}
+  const navigateStage=delta=>{
+    const target=viewIdx+delta;
+    if(target<0||target>maxIdx)return;
+    if(target===maxIdx&&savedRealStageIdx>=0){
+      s.stageIdx=savedRealStageIdx;s.questionIdx=savedRealQuestionIdx;savedRealStageIdx=-1;savedRealQuestionIdx=0;
+    } else {
+      if(savedRealStageIdx<0){savedRealStageIdx=Math.min(s.stageIdx,STAGES.length-1);savedRealQuestionIdx=s.questionIdx;}
+      s.stageIdx=target;s.questionIdx=0;
     }
-    stageList.appendChild(item);
-  });
-  stageCard.appendChild(stageList);
+    saveSessions();renderQuizUI();newQuizQuestion();
+  };
+  const stageNav=document.createElement("div");stageNav.className="stage-nav";
+  stageNav.innerHTML=`
+    <button class="stage-nav-arrow" id="stagePrevBtn" ${viewIdx<=0?"disabled":""}>‹</button>
+    <div class="stage-nav-info">
+      <div class="stage-nav-num">Stage ${viewIdx+1}/${STAGES.length}</div>
+      <div class="stage-nav-name">${viewStage.name} <span class="stage-nav-status ${statusClass}">${statusText}</span></div>
+    </div>
+    <button class="stage-nav-arrow" id="stageNextBtn" ${viewIdx>=maxIdx?"disabled":""}>›</button>`;
+  stageNav.querySelector("#stagePrevBtn").onclick=()=>navigateStage(-1);
+  stageNav.querySelector("#stageNextBtn").onclick=()=>navigateStage(1);
+  stageCard.appendChild(stageNav);
   el.appendChild(stageCard);
 
   // Quiz area
