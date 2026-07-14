@@ -1,7 +1,7 @@
 // UI translations (English / Thai) and language toggle.
 
 const LANG={
-  en:{chart:'📖 Chart',quiz:'🎯 Quiz',progress:'📊 Progress',vocab:'📚 Vocab',
+  en:{chart:'📖 Chart',quiz:'🎯 Quiz',progress:'📊 Progress',vocab:'📚 Kanji',
     newQuiz:'New Quiz',savedSessions:'Saved Sessions',start:'🚀 Start Quiz',selectAll:'Select all',clear:'Clear',
     resume:'▶ Resume',redo:'🔄 Redo',correct:'Correct! 🎉',wrong:'Wrong!',complete:'Complete!',
     overview:'Overview',accuracy:'Overall accuracy',charsPracticed:'Characters practiced',
@@ -15,7 +15,7 @@ const LANG={
     question:'Question',stage:'Stage',traceChar:'trace the character',writeQ:'Write the character shown',
     failedWrite:'See the correct strokes',basic:'Basic',dakuten:'Dakuten / Handakuten',combo:'Combinations (Yōon)',
     reviewMistakes:'🔁 Review Mistakes',charsToReview:"character(s) you've gotten wrong before."},
-  th:{chart:'📖 ตาราง',quiz:'🎯 แบบทดสอบ',progress:'📊 ความก้าวหน้า',vocab:'📚 คำศัพท์',
+  th:{chart:'📖 ตาราง',quiz:'🎯 แบบทดสอบ',progress:'📊 ความก้าวหน้า',vocab:'📚 คันจิ',
     newQuiz:'แบบทดสอบใหม่',savedSessions:'เซสชันที่บันทึก',start:'🚀 เริ่มทำ',selectAll:'เลือกทั้งหมด',clear:'ล้าง',
     resume:'▶ ทำต่อ',redo:'🔄 ทำใหม่',correct:'ถูกต้อง! 🎉',wrong:'ผิด!',complete:'สำเร็จ!',
     overview:'ภาพรวม',accuracy:'ความแม่นยำโดยรวม',charsPracticed:'ตัวอักษรที่ฝึก',
@@ -37,16 +37,27 @@ function updLang(){langBtn.textContent=lang==='en'?'🇺🇸 EN':'🇹🇭 TH';}
 updLang();
 langBtn.onclick=()=>{lang=lang==='en'?'th':'en';localStorage.setItem('kp-lang',lang);updLang();
   // Update nav tabs
-  document.querySelectorAll('.nav-btn').forEach(b=>{
-    const tab=b.dataset.tab;
-    if(LANG[lang][tab])b.textContent=LANG[lang][tab];
-  });
+  initNavLabels();
   renderChart();
   // Only re-render setup if setup is active (not active quiz panel)
   if(document.getElementById('panel-quiz').classList.contains('active') && document.getElementById('quizSetup').style.display !== 'none')renderQuizSetup();
   if(document.getElementById('panel-vocab').classList.contains('active') && document.getElementById('vocabSetup').style.display !== 'none')renderVocabSetup();
 };
-// Init nav labels
-function initNavLabels(){document.querySelectorAll('.nav-btn').forEach(b=>{const tab=b.dataset.tab;if(LANG[lang][tab])b.textContent=LANG[lang][tab];});}
+// Init nav labels — LANG entries are "<emoji> <label>"; split so the emoji
+// stays in .nav-icon and only the text swaps in .nav-label.
+function initNavLabels(){
+  document.querySelectorAll('.nav-btn').forEach(b=>{
+    const tab=b.dataset.tab;
+    const val=LANG[lang][tab];
+    if(!val)return;
+    const spaceIdx=val.indexOf(' ');
+    const icon=spaceIdx===-1?val:val.slice(0,spaceIdx);
+    const label=spaceIdx===-1?'':val.slice(spaceIdx+1);
+    const iconEl=b.querySelector('.nav-icon');
+    const labelEl=b.querySelector('.nav-label');
+    if(iconEl)iconEl.textContent=icon;
+    if(labelEl)labelEl.textContent=label;
+  });
+}
 
 
