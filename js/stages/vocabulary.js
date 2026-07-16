@@ -31,10 +31,10 @@ function renderVocabSetup(){
   if(weak.length){
     const rc=document.createElement("div");rc.className="card";
     rc.innerHTML=`
-      <div class="card-title"><span class="ico">🔁</span> Review Mistakes</div>
-      <div style="color:var(--ink2);font-size:13px;margin-bottom:12px;">${weak.length} word(s) you've gotten wrong before.</div>
+      <div class="card-title"><span class="ico">🔁</span> ${t('reviewMistakes')}</div>
+      <div style="color:var(--ink2);font-size:13px;margin-bottom:12px;">${weak.length} ${lang==='th'?'คำที่เคยตอบผิด':"word(s) you've gotten wrong before."}</div>
       <div class="start-area" style="margin-top:0;">
-        <button class="start-btn" id="vocabReviewBtn" style="background:linear-gradient(135deg,var(--kata),var(--accent));">🔁 Review Now</button>
+        <button class="start-btn" id="vocabReviewBtn" style="background:linear-gradient(135deg,var(--kata),var(--accent));">${t('reviewNow')}</button>
       </div>`;
     rc.querySelector("#vocabReviewBtn").onclick=startVocabReviewSession;
     el.appendChild(rc);
@@ -43,7 +43,7 @@ function renderVocabSetup(){
   // Saved sessions
   if(vocabSessions.length){
     const sc=document.createElement("div");sc.className="card";
-    sc.innerHTML='<div class="card-title"><span class="ico">📁</span> Saved Vocab Sessions</div>';
+    sc.innerHTML='<div class="card-title"><span class="ico">📁</span> '+t('savedVocab')+'</div>';
     vocabSessions.forEach((sess,idx)=>{
       const totalQ=getVocabTotalQ(sess.wordCount);
       const answered=getVocabGlobalQ(sess.stageIdx,sess.questionIdx,sess.wordCount);
@@ -53,7 +53,7 @@ function renderVocabSetup(){
       div.innerHTML=`
         <div class="saved-info">
           <div class="saved-title">${sess.label||("Session "+(idx+1))}</div>
-          <div class="saved-detail">${sess.wordCount} words • ${completed?"Completed":("Stage "+(sess.stageIdx+1)+"/"+VOCAB_STAGES.length+" — "+VOCAB_STAGES[Math.min(sess.stageIdx,VOCAB_STAGES.length-1)].name)}</div>
+          <div class="saved-detail">${sess.wordCount} ${t('words')} • ${completed?t('completed'):(t('stage')+" "+(sess.stageIdx+1)+"/"+VOCAB_STAGES.length+" — "+vocabStageName(VOCAB_STAGES[Math.min(sess.stageIdx,VOCAB_STAGES.length-1)]))}</div>
         </div>
         <div class="saved-progress">
           <div class="saved-pbar"><div class="saved-pbar-fill" style="width:${completed?100:pct}%"></div></div>
@@ -62,12 +62,12 @@ function renderVocabSetup(){
         <div class="saved-actions"></div>`;
       const acts=div.querySelector(".saved-actions");
       if(!completed){
-        const rb=document.createElement("button");rb.className="resume-btn";rb.textContent="▶ Resume";
+        const rb=document.createElement("button");rb.className="resume-btn";rb.textContent=t('resume');
         rb.onclick=()=>startFromVocabSession(idx);acts.appendChild(rb);
       } else {
-        const rb=document.createElement("button");rb.className="resume-btn";rb.textContent="🔄 Redo";
+        const rb=document.createElement("button");rb.className="resume-btn";rb.textContent=t('redo');
         rb.onclick=()=>{sess.stageIdx=0;sess.questionIdx=0;sess.score=0;sess.streak=0;
-          sess.stagesCompleted=[];saveVocabSessions();startFromVocabSession(idx);};
+          sess.stagesCompleted=[];sess.questionCoverage={};saveVocabSessions();startFromVocabSession(idx);};
         acts.appendChild(rb);
       }
       const db=document.createElement("button");db.className="delete-btn";db.textContent="✕";
@@ -80,18 +80,18 @@ function renderVocabSetup(){
 
   // New vocab quiz card
   const nc=document.createElement("div");nc.className="card";
-  nc.innerHTML='<div class="card-title"><span class="ico">📚</span> New Vocabulary Quiz</div>';
+  nc.innerHTML='<div class="card-title"><span class="ico">📚</span> '+t('newVocab')+'</div>';
 
   // JLPT level chips
   const jlptWrap=document.createElement("div");jlptWrap.className="qs-section";
-  jlptWrap.innerHTML='<div class="qs-section-title"><span class="dot h"></span> JLPT Level</div>';
+  jlptWrap.innerHTML='<div class="qs-section-title"><span class="dot h"></span> '+t('jlptLevel')+'</div>';
   const jlptRows=document.createElement("div");jlptRows.className="qs-rows";
   JLPT_LEVELS.forEach(lv=>{
     const chip=document.createElement("label");chip.className="qs-chip"+(setupSelJlpt.has(lv.id)?" sel":"");
     const chk=document.createElement("input");chk.type="checkbox";chk.checked=setupSelJlpt.has(lv.id);
     chk.onchange=()=>{if(chk.checked)setupSelJlpt.add(lv.id);else setupSelJlpt.delete(lv.id);chip.classList.toggle("sel",chk.checked);updateVocabSetupInfo();};
     const ico=document.createElement("div");ico.className="check-ico";ico.textContent="✓";
-    const label=document.createElement("span");label.className="qs-chars";label.textContent=lv.label;
+    const label=document.createElement("span");label.className="qs-chars";label.textContent=jlptLevelLabel(lv);
     chip.appendChild(chk);chip.appendChild(ico);chip.appendChild(label);
     jlptRows.appendChild(chip);
   });
@@ -99,14 +99,14 @@ function renderVocabSetup(){
 
   // Category chips
   const catWrap=document.createElement("div");catWrap.className="qs-section";
-  catWrap.innerHTML='<div class="qs-section-title"><span class="dot k"></span> Categories (leave all unchecked for every category)</div>';
+  catWrap.innerHTML='<div class="qs-section-title"><span class="dot k"></span> '+t('categories')+'</div>';
   const catRows=document.createElement("div");catRows.className="qs-rows";
   VOCAB_CATEGORIES.forEach(cat=>{
     const chip=document.createElement("label");chip.className="qs-chip"+(setupSelCategories.has(cat.id)?" sel kata-chip":"");
     const chk=document.createElement("input");chk.type="checkbox";chk.checked=setupSelCategories.has(cat.id);
     chk.onchange=()=>{if(chk.checked)setupSelCategories.add(cat.id);else setupSelCategories.delete(cat.id);chip.classList.toggle("sel",chk.checked);chip.classList.toggle("kata-chip",chk.checked);updateVocabSetupInfo();};
     const ico=document.createElement("div");ico.className="check-ico";ico.textContent="✓";
-    const label=document.createElement("span");label.className="qs-chars";label.textContent=cat.icon+" "+cat.label;
+    const label=document.createElement("span");label.className="qs-chars";label.textContent=cat.icon+" "+vocabCategoryLabel(cat);
     chip.appendChild(chk);chip.appendChild(ico);chip.appendChild(label);
     catRows.appendChild(chip);
   });
@@ -121,11 +121,11 @@ function renderVocabSetup(){
   const onlineChk=document.createElement("input");onlineChk.type="checkbox";onlineChk.checked=setupIncludeOnlineExtra;
   onlineChk.onchange=()=>{setupIncludeOnlineExtra=onlineChk.checked;onlineChip.classList.toggle("sel",onlineChk.checked);onlineChip.classList.toggle("kata-chip",onlineChk.checked);updateVocabSetupInfo();};
   const onlineIco=document.createElement("div");onlineIco.className="check-ico";onlineIco.textContent="✓";
-  const onlineLabel=document.createElement("span");onlineLabel.className="qs-chars";onlineLabel.textContent="🌐 Also load extra words online for the selected level(s)";
+  const onlineLabel=document.createElement("span");onlineLabel.className="qs-chars";onlineLabel.textContent="🌐 "+t('onlineExtra');
   onlineChip.appendChild(onlineChk);onlineChip.appendChild(onlineIco);onlineChip.appendChild(onlineLabel);
   onlineWrap.appendChild(onlineChip);
   const onlineNote=document.createElement("div");onlineNote.style.cssText="font-size:11px;color:var(--ink3);margin-top:4px;";
-  onlineNote.textContent="Pulls more N-level words from a public dictionary API (no Thai translation, cached locally after first load). Skipped automatically if you're offline.";
+  onlineNote.textContent=t('onlineNote');
   onlineWrap.appendChild(onlineNote);
   nc.appendChild(onlineWrap);
 
@@ -133,7 +133,7 @@ function renderVocabSetup(){
   nc.appendChild(info);
 
   const sa=document.createElement("div");sa.className="start-area";
-  const sb=document.createElement("button");sb.className="start-btn";sb.id="vocabStartBtn";sb.textContent="🚀 Start Vocab Quiz";
+  const sb=document.createElement("button");sb.className="start-btn";sb.id="vocabStartBtn";sb.textContent=t('startVocab');
   sb.onclick=startNewVocabQuiz;
   sa.appendChild(sb);nc.appendChild(sa);
 
@@ -145,8 +145,8 @@ function updateVocabSetupInfo(){
   const el=document.getElementById("vocabSetupInfo");
   if(!el)return;
   const pool=filterVocabulary(setupSelJlpt,setupSelCategories);
-  const extraNote=setupIncludeOnlineExtra?" (+ more once loaded)":"";
-  el.textContent=pool.length?`${pool.length} words selected${extraNote}`:"No words match this filter.";
+  const extraNote=setupIncludeOnlineExtra?t('moreAfterLoad'):"";
+  el.textContent=pool.length?`${pool.length} ${t('wordsSelected')}${extraNote}`:t('noWords');
   const btn=document.getElementById("vocabStartBtn");
   if(btn)btn.disabled=pool.length===0&&!setupIncludeOnlineExtra;
 }
@@ -159,7 +159,7 @@ async function startNewVocabQuiz(){
   if(setupIncludeOnlineExtra){
     vocabPoolLoading=true;
     const btn=document.getElementById("vocabStartBtn");
-    if(btn){btn.disabled=true;btn.textContent="⏳ Loading extra words…";}
+    if(btn){btn.disabled=true;btn.textContent="⏳ "+t('loadingExtra');}
     const levels=setupSelJlpt.size?[...setupSelJlpt]:JLPT_LEVELS.map(l=>l.id);
     const extra=await fetchJlptExtraWords(levels);
     // Category filter still applies: only fold in "extra" words when
@@ -169,19 +169,19 @@ async function startNewVocabQuiz(){
       pool=pool.concat(extra);
     }
     vocabPoolLoading=false;
-    if(btn){btn.disabled=pool.length===0;btn.textContent="🚀 Start Vocab Quiz";}
+    if(btn){btn.disabled=pool.length===0;btn.textContent=t('startVocab');}
   }
 
   if(!pool.length)return;
   const parts=[];
   if(setupSelJlpt.size)parts.push([...setupSelJlpt].join("/"));
   if(setupSelCategories.size)parts.push([...setupSelCategories].join(", "));
-  const label=(parts.join(" — ")||"All words")+" — "+pool.length+" words";
+  const label=(parts.join(" — ")||(lang==='th'?'ทุกคำ':'All words'))+" — "+pool.length+" "+t('words');
 
   const sess={
     label,selJlpt:[...setupSelJlpt],selCategories:[...setupSelCategories],
     wordCount:pool.length,stageIdx:0,questionIdx:0,score:0,streak:0,
-    stagesCompleted:[],created:Date.now(),
+    stagesCompleted:[],questionCoverage:{},created:Date.now(),
     extraWords:setupIncludeOnlineExtra?pool.filter(w=>w.source==="jlptvocab"):undefined
   };
   vocabSessions.push(sess);saveVocabSessions();
@@ -192,6 +192,7 @@ async function startNewVocabQuiz(){
 function startFromVocabSession(idx){
   const sess=vocabSessions[idx];
   activeVocabSessionIdx=idx;activeVocabSession=sess;
+  if(!sess.questionCoverage)sess.questionCoverage={};
   if(sess.isReview){
     activeVocabPool=VOCABULARY.filter(w=>sess.reviewWords.includes(w.word));
     const foundWords=new Set(activeVocabPool.map(w=>w.word));
@@ -213,7 +214,7 @@ function enterVocabQuiz(){
 
 function restartCurrentVocabLevel(){
   const s=activeVocabSession;if(!s)return;
-  s.stageIdx=0;s.questionIdx=0;s.score=0;s.streak=0;s.stagesCompleted=[];
+  s.stageIdx=0;s.questionIdx=0;s.score=0;s.streak=0;s.stagesCompleted=[];s.questionCoverage={};
   saveVocabSessions();renderVocabQuizUI();
 }
 
@@ -239,7 +240,7 @@ function startVocabReviewSession(){
   const sess={
     label:"🔁 Review Mistakes — "+pool.length+" words",
     isReview:true,reviewWords:pool.map(w=>w.word),wordCount:pool.length,
-    stageIdx:0,questionIdx:0,score:0,streak:0,stagesCompleted:[],created:Date.now()
+    stageIdx:0,questionIdx:0,score:0,streak:0,stagesCompleted:[],questionCoverage:{},created:Date.now()
   };
   vocabSessions.push(sess);saveVocabSessions();
   activeVocabSessionIdx=vocabSessions.length-1;activeVocabSession=sess;activeVocabPool=pool;
@@ -260,15 +261,15 @@ function renderVocabQuizUI(){
   const top=document.createElement("div");top.className="card";
   top.innerHTML=`
     <div class="qa-top">
-      <div class="qa-stage">${stg.name} — ${stg.desc}</div>
-      <button class="qa-exit" id="vocabExitBtn">✕ Exit</button>
+      <div class="qa-stage">${vocabStageName(stg)} — ${vocabStageDesc(stg)}</div>
+      <button class="qa-exit" id="vocabExitBtn">${t('exit')}</button>
     </div>
     <div class="qa-progress">
-      <div class="qa-plabel"><span>Stage ${s.stageIdx+1}/${VOCAB_STAGES.length} — Question ${s.questionIdx}/${currentStageTotal}</span><span>${globalPct}%</span></div>
+      <div class="qa-plabel"><span>${t('stage')} ${s.stageIdx+1}/${VOCAB_STAGES.length} — ${t('question')} ${s.questionIdx}/${currentStageTotal}</span><span>${globalPct}%</span></div>
       <div class="qa-bar-out"><div class="qa-bar-in" style="width:${globalPct}%"></div></div>
     </div>
     <div class="qa-toast" id="vocabToast"></div>
-    <div class="qa-score"><span>Score: <b id="vqScore">${s.score}</b></span><span>Streak: <b id="vqStreak">${s.streak}</b></span></div>`;
+    <div class="qa-score"><span>${t('score')}: <b id="vqScore">${s.score}</b></span><span>${t('streak')}: <b id="vqStreak">${s.streak}</b></span></div>`;
   el.appendChild(top);
   top.querySelector("#vocabExitBtn").onclick=exitVocabQuiz;
 
@@ -276,7 +277,7 @@ function renderVocabQuizUI(){
   const stageCard=document.createElement("div");stageCard.className="card";
   if(savedVocabRealStageIdx>=0 && s.stageIdx!==savedVocabRealStageIdx){
     const retBtn=document.createElement("button");retBtn.className="btn";retBtn.style.cssText="margin-bottom:12px;background:var(--accent);";
-    retBtn.textContent="↩ Return to current stage (Stage "+(savedVocabRealStageIdx+1)+": "+VOCAB_STAGES[savedVocabRealStageIdx].name+")";
+    retBtn.textContent=t('returnTo')+" ("+t('stage')+" "+(savedVocabRealStageIdx+1)+": "+vocabStageName(VOCAB_STAGES[savedVocabRealStageIdx])+")";
     retBtn.onclick=()=>{
       s.stageIdx=savedVocabRealStageIdx;s.questionIdx=savedVocabRealQuestionIdx;savedVocabRealStageIdx=-1;savedVocabRealQuestionIdx=0;
       saveVocabSessions();renderVocabQuizUI();newVocabQuestion();
@@ -290,10 +291,10 @@ function renderVocabQuizUI(){
   const isRealCurrent=!allComplete&&savedVocabRealStageIdx<0&&viewIdx===maxIdx;
   const done=s.stagesCompleted.includes(viewStage.id);
   let statusText,statusClass;
-  if(allComplete){statusText="Completed";statusClass="done";}
-  else if(isRealCurrent){statusText="In progress";statusClass="current";}
-  else if(done){statusText="Replaying";statusClass="done";}
-  else{statusText="Completed";statusClass="done";}
+  if(allComplete){statusText=t('completed');statusClass="done";}
+  else if(isRealCurrent){statusText=t('inProgress');statusClass="current";}
+  else if(done){statusText=t('replaying');statusClass="done";}
+  else{statusText=t('completed');statusClass="done";}
   const navigateVocabStage=delta=>{
     const target=viewIdx+delta;
     if(target<0||target>maxIdx)return;
@@ -309,8 +310,8 @@ function renderVocabQuizUI(){
   stageNav.innerHTML=`
     <button class="stage-nav-arrow" id="vStagePrevBtn" ${viewIdx<=0?"disabled":""}>‹</button>
     <div class="stage-nav-info">
-      <div class="stage-nav-num">Stage ${viewIdx+1}/${VOCAB_STAGES.length}</div>
-      <div class="stage-nav-name">${viewStage.name} <span class="stage-nav-status ${statusClass}">${statusText}</span></div>
+      <div class="stage-nav-num">${t('stage')} ${viewIdx+1}/${VOCAB_STAGES.length}</div>
+      <div class="stage-nav-name">${vocabStageName(viewStage)} <span class="stage-nav-status ${statusClass}">${statusText}</span></div>
     </div>
     <button class="stage-nav-arrow" id="vStageNextBtn" ${viewIdx>=maxIdx?"disabled":""}>›</button>`;
   stageNav.querySelector("#vStagePrevBtn").onclick=()=>navigateVocabStage(-1);
@@ -328,9 +329,9 @@ function renderVocabQuizUI(){
     document.getElementById("vqaArea").innerHTML=`
       <div style="text-align:center;padding:30px 0;">
         <div style="font-size:48px;margin-bottom:12px;">🎉</div>
-        <div style="font-size:20px;font-weight:800;margin-bottom:8px;">All Vocab Stages Complete!</div>
-        <div style="color:var(--ink2);margin-bottom:16px;">Score: ${s.score}</div>
-        <button class="start-btn" id="vocabRestartBtn">🔄 Restart This Level</button>
+        <div style="font-size:20px;font-weight:800;margin-bottom:8px;">${t('allComplete')}</div>
+        <div style="color:var(--ink2);margin-bottom:16px;">${t('score')}: ${s.score}</div>
+        <button class="start-btn" id="vocabRestartBtn">${t('redo')}</button>
       </div>`;
     document.getElementById("vocabRestartBtn").onclick=restartCurrentVocabLevel;
   }
@@ -344,33 +345,30 @@ function updateVocabQuizProgress(){
   const globalPct=Math.round(globalQ/totalQ*100);
   const currentStageTotal=getVocabStageQCount(s.stageIdx,s.wordCount);
   const plabel=document.querySelector("#vocabActive .qa-plabel");
-  if(plabel)plabel.innerHTML=`<span>Stage ${s.stageIdx+1}/${VOCAB_STAGES.length} — Question ${s.questionIdx}/${currentStageTotal}</span><span>${globalPct}%</span>`;
+  if(plabel)plabel.innerHTML=`<span>${t('stage')} ${s.stageIdx+1}/${VOCAB_STAGES.length} — ${t('question')} ${s.questionIdx}/${currentStageTotal}</span><span>${globalPct}%</span>`;
   const bar=document.querySelector("#vocabActive .qa-bar-in");
   if(bar)bar.style.width=globalPct+"%";
   const stageEl=document.querySelector("#vocabActive .qa-stage");
-  if(stageEl)stageEl.textContent=stg.name+" — "+stg.desc;
+  if(stageEl)stageEl.textContent=vocabStageName(stg)+" — "+vocabStageDesc(stg);
   document.getElementById("vqScore").textContent=s.score;
   document.getElementById("vqStreak").textContent=s.streak;
 }
 
 /* ---------------- Question logic ---------------- */
-function weightedPickVocab(pool){
-  const weightOfWord=w=>{
-    const st=vocabStats[w.word];
-    let wt;
-    if(!st||st.seen===0)wt=3;
-    else{const acc=st.correct/st.seen;wt=(acc>=.9&&st.seen>=4)?.4:(1-acc)*4+.6;}
-    const cm=vocabConfusion[w.word];
-    if(cm)wt+=Object.values(cm).reduce((a,b)=>a+b,0)*.8;
-    return wt;
-  };
-  const ws=pool.map(weightOfWord);const tot=ws.reduce((a,b)=>a+b,0);
-  let r=Math.random()*tot;
-  for(let i=0;i<pool.length;i++){r-=ws[i];if(r<=0)return pool[i];}
-  return pool[pool.length-1];
+function vocabWeightOf(w){
+  const st=vocabStats[w.word];
+  let wt;
+  if(!st||st.seen===0)wt=3;
+  else{const acc=st.correct/st.seen;wt=(acc>=.9&&st.seen>=4)?.4:(1-acc)*4+.6;}
+  const cm=vocabConfusion[w.word];
+  if(cm)wt+=Object.values(cm).reduce((a,b)=>a+b,0)*.8;
+  return wt;
+}
+function weightedPickVocab(pool,state={}){
+  return coverageWeightedPick(pool,state,item=>item.word,vocabWeightOf);
 }
 
-function newVocabQuestion(){
+async function newVocabQuestion(){
   clearInterval(vocabTimerHandle);
   const s=activeVocabSession;
   if(s.stageIdx>=VOCAB_STAGES.length){renderVocabQuizUI();return;}
@@ -384,18 +382,17 @@ function newVocabQuestion(){
   let correct;
   if(stage.id==="vintro"){
     correct=pool[s.questionIdx % pool.length];
-  } else {
-    correct=weightedPickVocab(pool);
   }
 
 
   // Mixed Vocab Test Stage
   if(stage.id==="vtest"){
     const formats=["vread", "vrecall", "vtype", "vlisten", "vmatch", "vwrite"];
-    const randomFormat = formats[Math.floor(Math.random()*formats.length)];
+    const randomFormat=coverageValuePick(formats,coverageState(s,"vtest-formats"));
 
-    if(randomFormat==="vmatch"){ renderVocabMatchQ(pool); return; }
-    if(randomFormat==="vwrite"){ renderVocabWriteQ(pool); return; }
+    if(randomFormat==="vmatch"){ await renderVocabMatchQ(pool); return; }
+    if(randomFormat==="vwrite"){ await renderVocabWriteQ(pool); return; }
+    correct=weightedPickVocab(pool,coverageState(s,"vtest-prompts"));
 
     const optPool=pool.length>=4?pool:VOCABULARY;
     let opts=[correct];
@@ -409,15 +406,16 @@ function newVocabQuestion(){
       if(!opts.some(o=>(randomFormat==="vrecall"?o.word:o.meaning)===key))opts.push(c);
     }
     shuffleArr(opts);
+    await ensureThaiMeanings(opts);
 
     const fb=document.createElement("div");fb.className="feedback";fb.id="vqFb";
 
     if(randomFormat==="vread"){
       const d=document.createElement("div");d.className="q-char";d.style.fontSize="42px";d.textContent=correct.word;
       area.appendChild(d);
-      area.appendChild(buildVocabOpts(opts,o=>o.meaning,correct));
+      area.appendChild(buildVocabOpts(opts,o=>vocabMeaning(o),correct));
     } else if(randomFormat==="vrecall"){
-      const d=document.createElement("div");d.className="q-romaji";d.style.fontSize="24px";d.textContent=correct.meaning;
+      const d=document.createElement("div");d.className="q-romaji";d.style.fontSize="24px";d.textContent=vocabMeaning(correct);
       area.appendChild(d);
       area.appendChild(buildVocabOpts(opts,o=>o.word,correct));
     } else if(randomFormat==="vtype"){
@@ -434,8 +432,9 @@ function newVocabQuestion(){
 
   // Individual stages that need their own full-area renderer (same
   // pattern as the kana quiz engine's match/write dispatch)
-  if(stage.id==="vmatch"){ renderVocabMatchQ(pool); return; }
-  if(stage.id==="vwrite"){ renderVocabWriteQ(pool); return; }
+  if(stage.id==="vmatch"){ await renderVocabMatchQ(pool); return; }
+  if(stage.id==="vwrite"){ await renderVocabWriteQ(pool); return; }
+  if(!correct)correct=weightedPickVocab(pool,coverageState(s,stage.id+"-prompts"));
 
   // Fallback for legacy sessions
   const optPool=pool.length>=4?pool:VOCABULARY;
@@ -446,6 +445,7 @@ function newVocabQuestion(){
     if(!opts.some(o=>(stage.id==="vrecall"?o.word:o.meaning)===key))opts.push(c);
   }
   shuffleArr(opts);
+  if(stage.id!=="vintro")await ensureThaiMeanings(opts);
 
   const fb=document.createElement("div");fb.className="feedback";fb.id="vqFb";
 
@@ -458,18 +458,19 @@ function newVocabQuestion(){
       if(!opts.some(o=>o.meaning===c.meaning))opts.push(c);
     }
     shuffleArr(opts);
+    await ensureThaiMeanings(opts);
 
     const d=document.createElement("div");d.className="q-char";d.style.fontSize="42px";d.textContent=correct.word;
     area.appendChild(d);
     
     const info=document.createElement("div");info.style.cssText="font-size:13px;color:var(--ink3);text-align:center;margin-bottom:12px;";
-    info.textContent="Learn this word, then click the highlighted answer to continue:";
+    info.textContent=t('learnPrompt');
     area.appendChild(info);
 
     const w=document.createElement("div");w.className="q-grid";
     opts.forEach(opt=>{
       const b=document.createElement("div");b.className="q-opt";
-      b.innerHTML=`<div style="font-size:18px;font-weight:700;">${opt.meaning}</div><div style="font-size:14px;color:var(--ink2);margin-top:4px;">${opt.reading}</div>`;
+      b.innerHTML=`<div style="font-size:18px;font-weight:700;">${vocabMeaning(opt)}</div><div style="font-size:14px;color:var(--ink2);margin-top:4px;">${opt.reading}</div>`;
       if(opt.word===correct.word){
         b.classList.add("correct");
         b.onclick=()=>{
@@ -482,6 +483,9 @@ function newVocabQuestion(){
       w.appendChild(b);
     });
     area.appendChild(w);
+    if(lang==='th'&&correct.meaningThApi){
+      const source=document.createElement("div");source.className="translation-source";source.textContent=t('translationBy');area.appendChild(source);
+    }
     speak(correct.reading);
     
     // Background enrichment for Intro stage
@@ -504,9 +508,9 @@ function newVocabQuestion(){
   } else if(stage.id==="vread"){
     const d=document.createElement("div");d.className="q-char";d.style.fontSize="42px";d.textContent=correct.word;
     area.appendChild(d);
-    area.appendChild(buildVocabOpts(opts,o=>o.meaning,correct));
+    area.appendChild(buildVocabOpts(opts,o=>vocabMeaning(o),correct));
   } else if(stage.id==="vrecall"){
-    const d=document.createElement("div");d.className="q-romaji";d.style.fontSize="24px";d.textContent=correct.meaning;
+    const d=document.createElement("div");d.className="q-romaji";d.style.fontSize="24px";d.textContent=vocabMeaning(correct);
     area.appendChild(d);
     area.appendChild(buildVocabOpts(opts,o=>o.word,correct));
   } else if(stage.id==="vlisten"){
@@ -522,18 +526,18 @@ function newVocabQuestion(){
 
 function renderVocabTypeQ(area,fb,correct){
   const q=document.createElement("div");q.className="q-char";q.style.fontSize="42px";q.textContent=correct.word;
-  const input=document.createElement("input");input.className="q-input";input.placeholder="type meaning or reading...";
+  const input=document.createElement("input");input.className="q-input";input.placeholder=t('typeMeaning');
   input.onkeydown=e=>{
     if(e.key==="Enter"){
       if(vocabAnsweredLock)return;
       const val=input.value.trim().toLowerCase();
-      const ok=val===correct.reading.toLowerCase() || val===correct.meaning.toLowerCase() || val===correct.word.toLowerCase();
+      const ok=val===correct.reading.toLowerCase() || val===correct.meaning.toLowerCase() || val===vocabMeaning(correct).toLowerCase() || val===correct.word.toLowerCase();
       vocabAnsweredLock=true;
       input.classList.add(ok?"correct":"wrong");
       if(ok){
-        fb.textContent="Correct! 🎉";fb.className="feedback good";speak(correct.reading);
+        fb.textContent=t('correct');fb.className="feedback good";speak(correct.reading);
       } else {
-        fb.innerHTML=`Wrong! <b>${correct.word}</b> = <b>${correct.meaning}</b>`;
+        fb.innerHTML=`${t('wrong')} <b>${correct.word}</b> = <b>${vocabMeaning(correct)}</b>`;
         fb.className="feedback bad";
         setTimeout(()=>speak(correct.reading),300);
       }
@@ -544,7 +548,7 @@ function renderVocabTypeQ(area,fb,correct){
   setTimeout(()=>input.focus(),100);
 }
 
-function renderVocabMatchQ(pool){
+async function renderVocabMatchQ(pool){
   const MIN_ITEMS=2, MAX_ITEMS=5;
   let chosenSource=[...pool];
   if(chosenSource.length<MIN_ITEMS){
@@ -552,11 +556,13 @@ function renderVocabMatchQ(pool){
     while(chosenSource.length<MIN_ITEMS && extra.length)chosenSource.push(extra.pop());
   }
   const count=Math.min(chosenSource.length,MAX_ITEMS);
-  const chosen=shuffleArr([...chosenSource]).slice(0,count);
+  const stageId=VOCAB_STAGES[activeVocabSession.stageIdx]?.id||"vmatch";
+  const chosen=coverageWeightedSample(chosenSource,count,coverageState(activeVocabSession,stageId+"-groups"),item=>item.word,vocabWeightOf);
+  await ensureThaiMeanings(chosen);
   const left=shuffleArr(chosen.map((k,i)=>({...k,pair:i})));
   const right=shuffleArr(chosen.map((k,i)=>({...k,pair:i})));
   const area=document.getElementById("vqaArea");
-  area.innerHTML='<div class="feedback" id="vqFb">Drag each word to its matching meaning.</div>';
+  area.innerHTML='<div class="feedback" id="vqFb">'+t('dragMatch')+'</div>';
   const mw=document.createElement("div");mw.className="match-area";
   const cL=document.createElement("div");cL.className="match-col";
   const cR=document.createElement("div");cR.className="match-col";
@@ -566,7 +572,7 @@ function renderVocabMatchQ(pool){
     enableVocabDrag(chip,chosen);cL.appendChild(chip);
   });
   right.forEach(k=>{
-    const dz=document.createElement("div");dz.className="dropzone";dz.textContent=k.meaning;dz.dataset.pair=k.pair;
+    const dz=document.createElement("div");dz.className="dropzone";dz.textContent=vocabMeaning(k);dz.dataset.pair=k.pair;
     dz.style.fontSize="14px";
     cR.appendChild(dz);
   });
@@ -602,7 +608,7 @@ function renderVocabMatchQ(pool){
             if(matched===chosen.length){
               activeVocabSession.score+=20;
               const fb=document.getElementById("vqFb");
-              fb.textContent="All matched! 🎉";
+              fb.textContent=t('allMatched');
               fb.className="feedback good";
               finishVocabQ(true,foundWord);
             } else {
@@ -620,8 +626,10 @@ function renderVocabMatchQ(pool){
   }
 }
 
-function renderVocabWriteQ(pool){
-  const correct=weightedPickVocab(pool);
+async function renderVocabWriteQ(pool){
+  const stageId=VOCAB_STAGES[activeVocabSession.stageIdx]?.id||"vwrite";
+  const correct=weightedPickVocab(pool,coverageState(activeVocabSession,stageId+"-prompts"));
+  await ensureThaiMeanings([correct]);
   const word=correct.word;
   let charIdx=0;
 
@@ -629,11 +637,11 @@ function renderVocabWriteQ(pool){
   area.innerHTML="";
 
   // Prompt
-  const prompt=document.createElement("div");prompt.className="q-romaji";prompt.textContent=correct.meaning;
+  const prompt=document.createElement("div");prompt.className="q-romaji";prompt.textContent=vocabMeaning(correct);
   area.appendChild(prompt);
 
   const info=document.createElement("div");info.style.cssText="font-size:13px;color:var(--ink3);margin-bottom:8px;text-align:center;";
-  info.innerHTML=`Trace the characters: <span style="font-family:var(--font-jp);font-size:18px;color:var(--ink);font-weight:700;">${word}</span>`;
+  info.innerHTML=`${t('traceCharacters')}: <span style="font-family:var(--font-jp);font-size:18px;color:var(--ink);font-weight:700;">${word}</span>`;
   area.appendChild(info);
 
   // Breadcrumb: shows every character of the word, one at a time in focus —
@@ -847,8 +855,7 @@ function renderVocabStudyStage(area,correct){
   // Meaning
   const meanDiv=document.createElement("div");
   meanDiv.className="study-meaning";
-  const thaiText = correct.meaningTh ? ` (${correct.meaningTh})` : "";
-  meanDiv.textContent=correct.meaning + thaiText;
+  meanDiv.textContent=vocabMeaning(correct);
   card.appendChild(meanDiv);
   
   // Speak button
@@ -864,7 +871,7 @@ function renderVocabStudyStage(area,correct){
   const nextBtn=document.createElement("button");
   nextBtn.className="start-btn";
   nextBtn.style.marginTop="16px";
-  nextBtn.textContent=lang==='en'?"Got it! ➔":"เข้าใจแล้ว! ➔";
+  nextBtn.textContent=t('gotIt');
   nextBtn.onclick=()=>{
     if(vocabAnsweredLock)return;
     vocabAnsweredLock=true;
@@ -888,7 +895,7 @@ function buildVocabOpts(opts,keyFn,correct){
       b.classList.add(ok?"correct":"wrong");
       const fb=document.getElementById("vqFb");
       if(ok){
-        fb.textContent="Correct! 🎉";fb.className="feedback good";speak(correct.reading);
+        fb.textContent=t('correct');fb.className="feedback good";speak(correct.reading);
       } else {
         recordVocabConfuse(correct.word,o.word);
         const correctBtn=[...w.children].find(c=>{
@@ -897,7 +904,7 @@ function buildVocabOpts(opts,keyFn,correct){
           return opts[idx]===correct;
         });
         if(correctBtn)correctBtn.classList.add("correct");
-        fb.innerHTML=`Wrong! <span style="font-family:var(--font-jp)">${correct.word}</span> = <b>${correct.meaning}</b>`;
+        fb.innerHTML=`${t('wrong')} <span style="font-family:var(--font-jp)">${correct.word}</span> = <b>${vocabMeaning(correct)}</b>`;
         fb.className="feedback bad";
         setTimeout(()=>speak(correct.reading),300);
       }

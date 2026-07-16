@@ -28,6 +28,7 @@ function startNewQuiz(){
     score:0,
     streak:0,
     stagesCompleted:[],
+    questionCoverage:{},
     created:Date.now()
   };
   sessions.push(sess);
@@ -42,6 +43,7 @@ function startFromSession(idx){
   const sess=sessions[idx];
   activeSessionIdx=idx;
   activeSession=sess;
+  if(!sess.questionCoverage)sess.questionCoverage={};
   if(sess.isReview){
     activePool=ALL_KANA.filter(k=>sess.reviewChars.includes(k.ch));
     if(!activePool.length){activePool=ALL_KANA;}
@@ -63,7 +65,7 @@ function enterQuiz(){
 function restartCurrentLevel(){
   const s=activeSession;
   if(!s)return;
-  s.stageIdx=0;s.questionIdx=0;s.score=0;s.streak=0;s.stagesCompleted=[];
+  s.stageIdx=0;s.questionIdx=0;s.score=0;s.streak=0;s.stagesCompleted=[];s.questionCoverage={};
   saveSessions();
   savedRealStageIdx=-1;
   savedRealQuestionIdx=0;
@@ -76,4 +78,3 @@ function exitQuiz(){
   document.getElementById("quizActive").style.display="none";
   renderQuizSetup();
 }
-

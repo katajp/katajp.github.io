@@ -36,7 +36,7 @@ function showCharDetail(ch,rm,script){
   const strokeDiv=document.createElement('div');
   strokeDiv.className='char-modal-stroke';
   strokeDiv.id='strokeContainer';
-  strokeDiv.innerHTML='<div style="color:var(--ink3);font-size:13px;padding:20px;">Loading stroke order...</div>';
+  strokeDiv.innerHTML='<div style="color:var(--ink3);font-size:13px;padding:20px;">'+t('loadingStroke')+'</div>';
   modal.appendChild(strokeDiv);
 
   // Replay button
@@ -44,7 +44,7 @@ function showCharDetail(ch,rm,script){
   replayDiv.style.cssText='text-align:center;margin-bottom:12px;';
   const replayBtn=document.createElement('button');
   replayBtn.className='btn';replayBtn.style.cssText='background:var(--ink3);font-size:12px;padding:6px 16px;';
-  replayBtn.textContent='🔄 Replay';
+  replayBtn.textContent=t('replay');
   replayBtn.onclick=()=>loadAndAnimateStrokes(ch,strokeDiv);
   replayDiv.appendChild(replayBtn);
   modal.appendChild(replayDiv);
@@ -53,7 +53,7 @@ function showCharDetail(ch,rm,script){
   const listenDiv=document.createElement('div');
   listenDiv.className='char-modal-listen';
   const listenBtn=document.createElement('button');
-  listenBtn.textContent='🔊 Listen';
+  listenBtn.textContent=t('listen');
   listenBtn.onclick=()=>speak(ch);
   listenDiv.appendChild(listenBtn);
   modal.appendChild(listenDiv);
@@ -132,7 +132,7 @@ async function loadAndAnimateStrokes(ch,container){
   } catch(e){
     container.innerHTML=`<div style="text-align:center;padding:16px;">
       <div style="font-family:var(--font-jp);font-size:120px;color:var(--ink);line-height:1;">${ch}</div>
-      <div style="color:var(--ink3);font-size:12px;margin-top:8px;">Stroke order data unavailable</div>
+      <div style="color:var(--ink3);font-size:12px;margin-top:8px;">${t('strokeUnavailable')}</div>
     </div>`;
   }
 }
@@ -187,4 +187,3 @@ function animateStrokePaths(paths,index,onComplete){
   }
   requestAnimationFrame(tick);
 }
-

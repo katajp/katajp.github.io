@@ -52,7 +52,7 @@ function renderQuizSetup(){
       } else {
         const rb=document.createElement("button");rb.className="resume-btn";rb.textContent="🔄 Redo";
         rb.onclick=()=>{sess.stageIdx=0;sess.questionIdx=0;sess.score=0;sess.streak=0;
-          sess.stagesCompleted=[];saveSessions();startFromSession(idx);};
+          sess.stagesCompleted=[];sess.questionCoverage={};saveSessions();startFromSession(idx);};
         acts.appendChild(rb);
       }
       const db=document.createElement("button");db.className="delete-btn";db.textContent="✕";
@@ -164,4 +164,3 @@ function buildPoolFromSelection(hSel,kSel){
   addFrom(KATA,"katakana",kSel);
   return pool;
 }
-

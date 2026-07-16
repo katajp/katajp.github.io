@@ -11,7 +11,8 @@ function renderMatchQ(pool){
     while(chosenSource.length<MIN_ITEMS && extra.length)chosenSource.push(extra.pop());
   }
   const count=Math.min(chosenSource.length,MAX_ITEMS);
-  const chosen=shuffleArr([...chosenSource]).slice(0,count);
+  const stageId=STAGES[activeSession.stageIdx]?.id||"match";
+  const chosen=coverageWeightedSample(chosenSource,count,coverageState(activeSession,stageId+"-groups"),item=>item.ch,weightOf);
   const left=shuffleArr(chosen.map((k,i)=>({...k,pair:i})));
   const right=shuffleArr(chosen.map((k,i)=>({...k,pair:i})));
   const area=document.getElementById("qaArea");
@@ -72,4 +73,3 @@ function renderMatchQ(pool){
     });
   }
 }
-

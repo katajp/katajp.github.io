@@ -8,10 +8,10 @@
    This is purely additive and opt-in (see the "Load extra words online"
    toggle in js/stages/vocabulary.js): the curated local list in
    js/data/vocabulary.js remains the source of truth for categorized,
-   Thai-translated practice. Extra words from this API have no Thai
-   translation and are grouped into the "extra" category. Every call
-   is wrapped so the app keeps working offline or if the API is down —
-   it just falls back to the local list only.
+   Thai-translated practice. Extra words are grouped into the "extra"
+   category; when Thai is selected, missing meanings are translated
+   on demand by js/api/translation.js. Every call is wrapped so the app
+   keeps working offline or if an API is down.
    ================================================================ */
 const JLPT_VOCAB_API_ENDPOINT="https://jlpt-vocab-api.vercel.app/api/words/all";
 

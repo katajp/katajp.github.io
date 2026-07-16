@@ -4,7 +4,7 @@ function refreshProgress(){
   let seenT=0,correctT=0;
   Object.values(stats).forEach(st=>{seenT+=st.seen;correctT+=st.correct;});
   document.getElementById("pAccuracy").textContent=seenT?Math.round(correctT/seenT*100)+"%":"-";
-  document.getElementById("pSeenCount").textContent=Object.keys(stats).length+" characters";
+  document.getElementById("pSeenCount").textContent=Object.keys(stats).length+" "+t("characters");
   document.getElementById("pTotalQ").textContent=seenT||"-";
 
   function renderCh(id,script){
@@ -28,13 +28,13 @@ function refreshProgress(){
   const vAcc=document.getElementById("pVocabAccuracy");
   if(vAcc)vAcc.textContent=vSeenT?Math.round(vCorrectT/vSeenT*100)+"%":"-";
   const vSeen=document.getElementById("pVocabSeenCount");
-  if(vSeen)vSeen.textContent=Object.keys(vocabStats).length+" words";
+  if(vSeen)vSeen.textContent=Object.keys(vocabStats).length+" "+t("words");
 
   // Weak chars
   const weak=Object.entries(stats).filter(([ch,st])=>st.seen>=3&&st.correct/st.seen<.7)
     .sort((a,b)=>(a[1].correct/a[1].seen)-(b[1].correct/b[1].seen));
   const wl=document.getElementById("weakList");
-  if(!weak.length){wl.textContent="Looking good! 👍";}
+  if(!weak.length){wl.textContent=t("lookingGood");}
   else{
     wl.innerHTML="";
     weak.forEach(([ch,st])=>{
@@ -65,4 +65,3 @@ document.getElementById("resetAllBtn").onclick=()=>{
   refreshProgress();
   renderQuizSetup();
 };
-

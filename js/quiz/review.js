@@ -29,6 +29,7 @@ function startReviewSession(){
     score:0,
     streak:0,
     stagesCompleted:[],
+    questionCoverage:{},
     created:Date.now()
   };
   sessions.push(sess);

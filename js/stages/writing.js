@@ -3,7 +3,8 @@
 function renderWriteQ(pool){
   const singles=pool.filter(k=>k.ch.length===1);
   if(!singles.length){finishQ(true,pool[0]);return;}
-  const correct=weightedPick(singles);
+  const stageId=STAGES[activeSession.stageIdx]?.id||"write";
+  const correct=weightedPick(singles,coverageState(activeSession,stageId+"-prompts"));
 
   const area=document.getElementById("qaArea");
   area.innerHTML="";
@@ -160,4 +161,3 @@ function renderWriteQ(pool){
     }catch(e){strokeInfo.textContent='Stroke data unavailable';finishQ(true,correct);}
   })();
 }
-

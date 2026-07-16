@@ -1,4 +1,4 @@
-const CACHE_NAME = "kp-pwa-cache-v4";
+const CACHE_NAME = "kp-pwa-cache-v9";
 const ASSETS = [
   "./",
   "./index.html",
@@ -9,6 +9,7 @@ const ASSETS = [
   "./css/modal.css",
   "./css/quiz.css",
   "./css/progress.css",
+  "./css/write.css",
   "./js/app.js",
   "./js/core/constants.js",
   "./js/core/utils.js",
@@ -35,6 +36,8 @@ const ASSETS = [
   "./js/stages/matching.js",
   "./js/stages/writing.js",
   "./js/stages/vocabulary.js",
+  "./js/stages/sentence.js",
+  "./js/stages/grammar.js",
   "./js/ui/chart.js",
   "./js/ui/modal.js",
   "./js/ui/progress.js",
@@ -45,6 +48,7 @@ const ASSETS = [
   "./js/components/timer.js",
   "./js/components/dialog.js",
   "./js/api/cache.js",
+  "./js/api/translation.js",
   "./js/api/dictionary.js",
   "./js/api/vocabulary.js",
   "./js/api/jlptVocabApi.js",

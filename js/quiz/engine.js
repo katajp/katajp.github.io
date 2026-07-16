@@ -138,7 +138,7 @@ function newQuizQuestion(){
         b.classList.add("correct");
         b.onclick=()=>{
           if(answeredLock)return;answeredLock=true;
-          finishQ(true,correct.ch);
+          finishQ(true,correct);
         };
       } else {
         b.style.opacity="0.5";
@@ -153,12 +153,12 @@ function newQuizQuestion(){
   // Mixed Test stage selection
   if(stage.id==="test"){
     const formats=["mc", "rev", "type", "listen", "match", "write"];
-    const randomFormat = formats[Math.floor(Math.random()*formats.length)];
+    const randomFormat=coverageValuePick(formats,coverageState(s,"test-formats"));
 
     if(randomFormat==="match"){ renderMatchQ(pool); return; }
     if(randomFormat==="write"){ renderWriteQ(pool); return; }
 
-    const correct=weightedPick(pool);
+    const correct=weightedPick(pool,coverageState(s,"test-prompts"));
     const optPool=pool.length>=4?pool:ALL_KANA;
     let opts=[correct];
 
@@ -187,7 +187,7 @@ function newQuizQuestion(){
   if(stage.id==="match"){renderMatchQ(pool);return;}
   if(stage.id==="write"){renderWriteQ(pool);return;}
 
-  const correct=weightedPick(pool);
+  const correct=weightedPick(pool,coverageState(s,stage.id+"-prompts"));
   const optPool=pool.length>=4?pool:ALL_KANA;
   let opts=[correct];
 
