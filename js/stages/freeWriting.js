@@ -1,4 +1,5 @@
-// Stage: "Free Write" — draw from memory and match each real stroke at 70% or above.
+// Stage: "Free Write" — validate one stroke at a time and keep the real
+// stroke visible as the learner continues with the remaining strokes.
 
 function scoreFreeWriteStroke(user,expected){
   if(user.length<3||expected.length<3)return{ok:false,score:0};
@@ -21,8 +22,7 @@ function renderFreeWriteQ(pool){
   if(!singles.length){finishQ(true,pool[0]);return;}
   const stageId=STAGES[activeSession.stageIdx]?.id||"freewrite";
   const correct=weightedPick(singles,coverageState(activeSession,stageId+"-prompts"));
-  const area=document.getElementById("qaArea");
-  area.innerHTML="";answeredLock=false;
+  const area=document.getElementById("qaArea");area.innerHTML="";answeredLock=false;
 
   const prompt=document.createElement("div");prompt.className="q-romaji";prompt.textContent=correct.rm;area.appendChild(prompt);
   const info=document.createElement("div");info.className="freewrite-instruction";info.textContent=t('drawFromMemory');area.appendChild(info);
@@ -34,83 +34,87 @@ function renderFreeWriteQ(pool){
   const board=document.createElement("div");board.className="freewrite-board";
   const canvas=document.createElement("canvas");canvas.width=320;canvas.height=320;canvas.setAttribute("aria-label",t('blankWritingArea'));
   const answerLayer=document.createElementNS("http://www.w3.org/2000/svg","svg");answerLayer.classList.add("freewrite-answer-layer");answerLayer.setAttribute("viewBox","0 0 109 109");answerLayer.setAttribute("aria-hidden","true");
-  board.append(canvas,answerLayer);area.appendChild(board);
+  board.append(canvas,answerLayer,createStrokeCredit());area.appendChild(board);
 
   const verdict=document.createElement("div");verdict.className="freewrite-verdict";verdict.hidden=true;verdict.setAttribute("role","status");area.appendChild(verdict);
   const actions=document.createElement("div");actions.className="freewrite-controls";area.appendChild(actions);
 
   const ctx=canvas.getContext("2d"),size=canvas.width;
-  let expectedStrokes=[],expectedSamples=[],userStrokes=[],currentStroke=[];
-  let drawing=false,loading=true,checking=false,finished=false,attempt=1,maxAttempts=0;
+  let expectedStrokes=[],expectedSamples=[],results=[],currentStroke=[];
+  let strokeIndex=0,drawing=false,loading=true,checking=false,finished=false;
 
   function position(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*size/r.width,y:(e.clientY-r.top)*size/r.height};}
-
-  function renderMeter(results){
+  function renderMeter(){
     meterBars.innerHTML="";
     expectedStrokes.forEach((_,index)=>{
       const bar=document.createElement("span");bar.className="freewrite-meter-bar";
-      if(results)bar.classList.add(results[index].ok?"is-correct":"is-wrong");
-      else if(index<userStrokes.length)bar.classList.add("is-drawn");
+      if(results[index]===true)bar.classList.add("is-correct");
+      else if(results[index]===false)bar.classList.add("is-wrong");
       meterBars.appendChild(bar);
     });
-    meter.setAttribute("aria-valuemax",String(expectedStrokes.length));meter.setAttribute("aria-valuenow",String(userStrokes.length));
-    meterLabel.textContent=`${t('attempt')} ${attempt}/${maxAttempts} — ${t('stroke')}: ${Math.min(userStrokes.length,expectedStrokes.length)}/${expectedStrokes.length}`;
+    meter.setAttribute("aria-valuemax",String(expectedStrokes.length));meter.setAttribute("aria-valuenow",String(results.length));
+    meterLabel.textContent=`${t('stroke')}: ${results.length}/${expectedStrokes.length}`;
   }
 
-  // A stroke must cover and stay near at least 70% of its real SVG path.
-
-  function start(e){if(loading||checking||finished||answeredLock)return;e.preventDefault();drawing=true;currentStroke=[position(e)];try{canvas.setPointerCapture(e.pointerId);}catch(err){}}
+  function start(e){
+    if(loading||checking||finished||answeredLock)return;
+    e.preventDefault();drawing=true;currentStroke=[position(e)];
+    try{canvas.setPointerCapture(e.pointerId);}catch(error){}
+  }
   function move(e){
     if(!drawing||checking||finished||answeredLock)return;e.preventDefault();
     const next=position(e),last=currentStroke[currentStroke.length-1];if(Math.hypot(next.x-last.x,next.y-last.y)<1.5)return;
-    currentStroke.push(next);ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--ink').trim()||'#171815';ctx.lineWidth=9;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(next.x,next.y);ctx.stroke();
+    currentStroke.push(next);ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--ink').trim()||'#d7dce2';ctx.lineWidth=9;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(next.x,next.y);ctx.stroke();
   }
   function end(e){
-    if(!drawing)return;drawing=false;try{canvas.releasePointerCapture(e.pointerId);}catch(err){}
-    if(currentStroke.length>1){userStrokes.push(currentStroke);renderMeter();if(userStrokes.length===expectedStrokes.length)evaluateWriting();}
-    currentStroke=[];
+    if(!drawing)return;drawing=false;
+    try{canvas.releasePointerCapture(e.pointerId);}catch(error){}
+    if(currentStroke.length>1)checkCurrentStroke();
+    else currentStroke=[];
   }
 
-  function resetAttempt(){
-    ctx.clearRect(0,0,size,size);userStrokes=[];currentStroke=[];drawing=false;checking=false;answeredLock=false;
-    board.classList.remove("is-correct","is-wrong","is-answer");answerLayer.classList.remove("is-correct");answerLayer.innerHTML="";verdict.hidden=true;renderMeter();
-  }
-  function showVerdict(ok,message){verdict.hidden=false;verdict.className=`freewrite-verdict ${ok?'is-correct':'is-wrong'}`;verdict.textContent=message;board.classList.add(ok?'is-correct':'is-wrong');}
-  function animateAnswer(indexes,tone){
-    answerLayer.innerHTML="";answerLayer.classList.toggle("is-correct",tone==='correct');board.classList.add("is-answer");
-    indexes.forEach(index=>{const path=document.createElementNS("http://www.w3.org/2000/svg","path");path.setAttribute("d",expectedStrokes[index]);answerLayer.appendChild(path);});
-    const paths=[...answerLayer.querySelectorAll("path")];
-    return paths.reduce((chain,path)=>chain.then(()=>new Promise(resolve=>{
+  function revealStroke(index,animate){
+    const path=document.createElementNS("http://www.w3.org/2000/svg","path");path.setAttribute("d",expectedStrokes[index]);path.dataset.stroke=String(index);answerLayer.appendChild(path);
+    if(!animate){path.style.opacity="1";path.style.strokeDasharray="none";path.style.strokeDashoffset="0";return Promise.resolve();}
+    return new Promise(resolve=>{
       const length=path.getTotalLength();path.style.strokeDasharray=String(length);path.style.strokeDashoffset=String(length);path.style.opacity="1";
       const duration=360+Math.min(length*2,440),started=performance.now();
-      function tick(now){if(!path.isConnected){resolve();return;}const progress=Math.min((now-started)/duration,1);path.style.strokeDashoffset=String(length*(1-Math.pow(1-progress,3)));if(progress<1)requestAnimationFrame(tick);else setTimeout(resolve,140);}
+      function tick(now){
+        if(!path.isConnected){resolve();return;}
+        const progress=Math.min((now-started)/duration,1);
+        // Start fully hidden (offset = length), then reveal the path from its
+        // real start point to its end point (offset = 0).
+        path.style.strokeDashoffset=String(length*Math.pow(1-progress,3));
+        if(progress<1)requestAnimationFrame(tick);else{path.style.strokeDashoffset="0";resolve();}
+      }
       requestAnimationFrame(tick);
-    })),Promise.resolve());
-  }
-  function showNext(ok,message){
-    finished=true;checking=false;answeredLock=true;showVerdict(ok,message);actions.innerHTML="";
-    const next=document.createElement("button");next.className="btn";next.textContent=t('nextQuestion');next.onclick=()=>finishQ(ok,correct);actions.appendChild(next);
-  }
-  function evaluateWriting(){
-    if(checking||finished)return;checking=true;answeredLock=true;
-    const results=expectedSamples.map((sample,index)=>scoreFreeWriteStroke(userStrokes[index]||[],sample));renderMeter(results);
-    const ok=results.every(result=>result.ok);
-    if(ok){
-      meterLabel.textContent=t('revealingStrokes');animateAnswer(expectedStrokes.map((_,index)=>index),'correct').then(()=>{speak(correct.ch);showNext(true,t('freeWriteAnswerCorrect'));});
-      return;
-    }
-    const failedIndex=results.findIndex(result=>!result.ok);attempt++;
-    meterLabel.textContent=t('revealingStrokes');showVerdict(false,t('freeWriteTryAgain'));
-    animateAnswer([failedIndex],'wrong').then(()=>{
-      if(attempt>maxAttempts){
-        meterLabel.textContent=t('revealingStrokes');animateAnswer(expectedStrokes.map((_,index)=>index),'wrong').then(()=>{speak(correct.ch);showNext(false,t('freeWriteAnswerWrong'));});
-      }else setTimeout(resetAttempt,650);
     });
   }
+
+  function showNext(){
+    finished=true;checking=false;answeredLock=true;board.classList.add("is-answer");
+    const ok=results.every(Boolean);board.classList.add(ok?"is-correct":"is-wrong");
+    verdict.hidden=false;verdict.className=`freewrite-verdict ${ok?'is-correct':'is-wrong'}`;
+    verdict.textContent=ok?t('freeWriteAnswerCorrect'):t('freeWriteAnswerWrong');
+    actions.innerHTML="";const next=document.createElement("button");next.className="btn";next.textContent=t('nextQuestion');next.onclick=()=>finishQ(ok,correct);actions.appendChild(next);speak(correct.ch);
+  }
+
+  function checkCurrentStroke(){
+    if(checking||finished)return;checking=true;answeredLock=true;
+    const result=scoreFreeWriteStroke(currentStroke,expectedSamples[strokeIndex]);results[strokeIndex]=result.ok;
+    currentStroke=[];ctx.clearRect(0,0,size,size);renderMeter();
+    // Both successful strokes and corrections follow the real stroke path.
+    revealStroke(strokeIndex,true).then(()=>{
+      strokeIndex++;
+      if(strokeIndex>=expectedStrokes.length)showNext();
+      else{checking=false;answeredLock=false;}
+    });
+  }
+
   async function loadStrokeData(){
     loading=true;actions.innerHTML="";meterLabel.textContent=t('loadingStroke');
     try{
-      const {paths}=await fetchCharSvgPaths(correct.ch);expectedStrokes=[...paths].map(path=>path.getAttribute('d')).filter(Boolean);if(!expectedStrokes.length)throw new Error('No stroke data');maxAttempts=expectedStrokes.length;
+      const {paths}=await fetchCharSvgPaths(correct.ch);expectedStrokes=[...paths].map(path=>path.getAttribute('d')).filter(Boolean);if(!expectedStrokes.length)throw new Error('No stroke data');
       expectedSamples=expectedStrokes.map(d=>sampleSvgPath(d,64).points.map(point=>({x:point.x*size/109,y:point.y*size/109})));loading=false;renderMeter();
     }catch(error){
       loading=true;meterLabel.textContent=t('strokeUnavailable');actions.innerHTML="";

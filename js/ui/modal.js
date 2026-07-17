@@ -127,6 +127,7 @@ async function loadAndAnimateStrokes(ch,container){
     }
     html+='</div>';
     container.innerHTML=html;
+    container.appendChild(createStrokeCredit());
 
     // Animate all blocks sequentially
     const blocks=container.querySelectorAll('.stroke-char-block');
@@ -137,6 +138,7 @@ async function loadAndAnimateStrokes(ch,container){
       <div style="font-family:var(--font-jp);font-size:120px;color:var(--ink);line-height:1;">${ch}</div>
       <div style="color:var(--ink3);font-size:12px;margin-top:8px;">${t('strokeUnavailable')}</div>
     </div>`;
+    container.appendChild(createStrokeCredit());
   }
 }
 

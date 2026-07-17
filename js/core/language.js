@@ -28,9 +28,9 @@ const LANG={
     loadingExtra:'Loading extra words…',reviewNow:'Review now',gotIt:'Got it! ➔',learnPrompt:'Learn this word, then choose the highlighted answer to continue.',
     dragMatch:'Drag each word to its matching meaning.',allMatched:'All matched! 🎉',typeMeaning:'type meaning or reading…',
     traceCharacters:'Trace the characters',translationBy:'Automatic Thai translation by MyMemory',hiraName:'Hiragana',kataName:'Katakana',replay:'🔄 Replay',listen:'🔊 Listen',loadingStroke:'Loading stroke order…',strokeUnavailable:'Stroke order data unavailable',showDetails:'Show details',
-    drawFromMemory:'Write from memory. The answer is checked automatically when all strokes are drawn.',blankWritingArea:'Blank writing area',clearCanvas:'Clear canvas',revealAnswer:'Show answer',answerIs:'Answer',practiceAgain:'Practice again',available:'Available',
+    drawFromMemory:'Draw one stroke at a time. Each real stroke stays visible after checking.',blankWritingArea:'Blank writing area',clearCanvas:'Clear canvas',revealAnswer:'Show answer',answerIs:'Answer',practiceAgain:'Practice again',available:'Available',
     freeWriteCorrect:'Correct — every stroke matches!',freeWriteWrong:'Not quite — watch the correct stroke order.',revealingStrokes:'Showing the correct strokes one by one…',
-    freeWriteTryAgain:'Not quite. One incorrect stroke is shown — try again.',freeWriteAnswerCorrect:'Correct. Here is the true stroke order.',freeWriteAnswerWrong:'Here is the true stroke order.',attempt:'Attempt',nextQuestion:'Next question ➔',retryStrokeLoad:'Retry loading stroke data'
+    freeWriteTryAgain:'Not quite. One incorrect stroke is shown — try again.',freeWriteAnswerCorrect:'Correct. Here is the true stroke order.',freeWriteAnswerWrong:'Here is the true stroke order.',attempt:'Attempt',nextQuestion:'Next question ➔',nextCharacter:'Next character ➔',retryStrokeLoad:'Retry loading stroke data'
   },
   th:{
     chart:'あ ตาราง',quiz:'練 แบบทดสอบ',progress:'記 ความก้าวหน้า',vocab:'語 คันจิ',
@@ -59,16 +59,16 @@ const LANG={
     loadingExtra:'กำลังโหลดคำศัพท์เสริม…',reviewNow:'ทบทวนตอนนี้',gotIt:'เข้าใจแล้ว! ➔',learnPrompt:'เรียนคำนี้ แล้วเลือกคำตอบที่ไฮไลต์เพื่อทำต่อ',
     dragMatch:'ลากคำศัพท์ไปจับคู่กับความหมาย',allMatched:'จับคู่ครบแล้ว! 🎉',typeMeaning:'พิมพ์ความหมายหรือคำอ่าน…',
     traceCharacters:'ลากตามตัวอักษร',translationBy:'คำแปลไทยอัตโนมัติโดย MyMemory',hiraName:'ฮิรางานะ',kataName:'คาตาคานะ',replay:'🔄 เล่นซ้ำ',listen:'🔊 ฟังเสียง',loadingStroke:'กำลังโหลดลำดับขีด…',strokeUnavailable:'ไม่พบข้อมูลลำดับขีด',showDetails:'ดูรายละเอียด',
-    drawFromMemory:'เขียนคานะจากความจำ ระบบจะตรวจอัตโนมัติเมื่อวาดครบทุกขีด',blankWritingArea:'พื้นที่เขียนเปล่า',clearCanvas:'ล้างกระดาน',revealAnswer:'ดูคำตอบ',answerIs:'คำตอบ',practiceAgain:'ฝึกอีกครั้ง',available:'เลือกได้',
+    drawFromMemory:'วาดทีละขีด เมื่อตรวจแล้วเส้นจริงของขีดนั้นจะค้างไว้',blankWritingArea:'พื้นที่เขียนเปล่า',clearCanvas:'ล้างกระดาน',revealAnswer:'ดูคำตอบ',answerIs:'คำตอบ',practiceAgain:'ฝึกอีกครั้ง',available:'เลือกได้',
     freeWriteCorrect:'วาดถูกต้องครบทุกขีด!',freeWriteWrong:'ยังไม่ถูกต้อง — ดูลำดับขีดที่ถูกต้อง',revealingStrokes:'กำลังเฉลยลำดับขีดทีละขีด…',
-    freeWriteTryAgain:'ยังไม่ถูกต้อง — เฉลยขีดที่ผิด 1 ขีดแล้ว ลองอีกครั้ง',freeWriteAnswerCorrect:'วาดถูกต้อง นี่คือลำดับขีดจริง',freeWriteAnswerWrong:'นี่คือลำดับขีดจริง',attempt:'ครั้งที่',nextQuestion:'ข้อต่อไป ➔',retryStrokeLoad:'ลองโหลดข้อมูลลำดับขีดอีกครั้ง'
+    freeWriteTryAgain:'ยังไม่ถูกต้อง — เฉลยขีดที่ผิด 1 ขีดแล้ว ลองอีกครั้ง',freeWriteAnswerCorrect:'วาดถูกต้อง นี่คือลำดับขีดจริง',freeWriteAnswerWrong:'นี่คือลำดับขีดจริง',attempt:'ครั้งที่',nextQuestion:'ข้อต่อไป ➔',nextCharacter:'ตัวอักษรถัดไป ➔',retryStrokeLoad:'ลองโหลดข้อมูลลำดับขีดอีกครั้ง'
   }
 };
 
 const VOCAB_STAGE_TH={
   vintro:['แนะนำ','เรียนรู้คำศัพท์'],vread:['อ่าน','คำศัพท์ → ความหมาย'],vrecall:['ทบทวน','ความหมาย → คำศัพท์'],
   vtype:['พิมพ์','พิมพ์ความหมายหรือคำอ่าน'],vlisten:['ฟัง','เสียง → คำศัพท์'],vmatch:['จับคู่','ลากและวาง'],
-  vwrite:['เขียน','ลากตามตัวอักษร'],vtest:['ทดสอบ','รวมหลายรูปแบบ']
+  vwrite:['เขียน','ลากตามตัวอักษร'],vfreewrite:['เขียนจากความจำ','เขียนทีละขีดโดยไม่มีเส้นช่วย'],vtest:['ทดสอบ','รวมหลายรูปแบบ']
 };
 const KANA_STAGE_TH={
   intro:['แนะนำ','เรียนรู้ตัวอักษร'],mc:['อ่าน','คานะ → โรมาจิ'],rev:['ทบทวน','โรมาจิ → คานะ'],type:['พิมพ์','พิมพ์โรมาจิ'],

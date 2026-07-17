@@ -1,7 +1,7 @@
 /* ================================================================
    APP-WIDE CONSTANTS
    ================================================================ */
-const APP_VERSION = "0.35b";
+const APP_VERSION = "0.45b";
 
 const STAGES=[
   {id:"intro",name:"Intro",desc:"learn the character"},
@@ -25,6 +25,7 @@ const VOCAB_STAGES=[
   {id:"vlisten",name:"Listen",desc:"audio → word"},
   {id:"vmatch",name:"Match",desc:"drag & drop"},
   {id:"vwrite",name:"Write",desc:"trace the character"},
+  {id:"vfreewrite",name:"Free Write",desc:"write from memory"},
   {id:"vtest",name:"Test",desc:"mixed formats"}
 ];
 const VOCAB_Q_PER_STAGE=10;

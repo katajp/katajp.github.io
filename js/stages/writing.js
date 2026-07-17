@@ -22,7 +22,7 @@ function renderWriteQ(pool){
   const wrap=document.createElement("div");wrap.style.cssText="position:relative;width:250px;height:250px;";
   const canvas=document.createElement("canvas");canvas.width=250;canvas.height=250;
   canvas.style.cssText="position:absolute;top:0;left:0;width:100%;height:100%;cursor:crosshair;touch-action:none;border-radius:var(--r-l);z-index:4;";
-  wrap.appendChild(canvas);bg.appendChild(wrap);area.appendChild(bg);
+  wrap.appendChild(canvas);bg.append(wrap,createStrokeCredit());area.appendChild(bg);
 
   const strokeInfo=document.createElement("div");strokeInfo.style.cssText="font-size:13px;color:var(--ink3);font-weight:600;margin-top:8px;";
   strokeInfo.textContent=t('loading');area.appendChild(strokeInfo);
@@ -33,7 +33,7 @@ function renderWriteQ(pool){
 
   // Load strokes and setup writing
   const qSize=250;
-  let qStrokes=[], qStrokeIdx=0, qSamplePts=[], qDrawing=false, qUserPts=[], qAttempts=0, qDone=false;
+  let qStrokes=[], qStrokeIdx=0, qSamplePts=[], qDrawing=false, qUserPts=[], qAttempts=0, qDone=false, qAnimating=false;
 
   function qScalePoints(pts){return pts.map(p=>({x:p.x*qSize/109,y:p.y*qSize/109}));}
   function qGetPos(e){
@@ -70,24 +70,14 @@ function renderWriteQ(pool){
     let svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 109 109" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:3;display:block;">`;
     qStrokes.forEach((d,i)=>{
       let c=ghost,w='3',o='0.5';
-      if(i<qStrokeIdx){c=done;o='0.3';}
+      if(i<qStrokeIdx){c=done;w='4';o='0.95';}
       else if(i===qStrokeIdx&&!qDone){c=accent;w='4';o='0.5';}
-      svg+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" opacity="${o}"/>`;
+      svg+=`<path data-stroke="${i}" d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" opacity="${o}"/>`;
     });
     svg+=`</svg>`;wrap.insertAdjacentHTML('afterbegin',svg);
   }
 
   function qRedraw(){const ctx=canvas.getContext('2d');ctx.clearRect(0,0,qSize,qSize);qDrawGrid();}
-
-  function qDrawCompleted(d){
-    const {points}=sampleSvgPath(d,60);
-    const scaled=qScalePoints(points);if(!scaled.length)return;
-    const ctx=canvas.getContext('2d');
-    ctx.strokeStyle='#2e8ee0';ctx.lineWidth=5;ctx.lineCap='round';ctx.lineJoin='round';
-    ctx.beginPath();ctx.moveTo(scaled[0].x,scaled[0].y);
-    for(let i=1;i<scaled.length;i++)ctx.lineTo(scaled[i].x,scaled[i].y);
-    ctx.stroke();
-  }
 
   function qPrepareStroke(){
     if(qStrokeIdx>=qStrokes.length)return;
@@ -96,18 +86,16 @@ function renderWriteQ(pool){
   }
 
   function qHandleDown(e) {
-    if(qDone||answeredLock)return;
+    if(qDone||qAnimating||answeredLock)return;
     qDrawing=true;qUserPts=[];qUserPts.push(qGetPos(e));
   }
   function qHandleMove(e) {
-    if(!qDrawing||qDone||answeredLock)return;
+    if(!qDrawing||qDone||qAnimating||answeredLock)return;
     const p=qGetPos(e);qUserPts.push(p);
     if(qUserPts.length>1){
       const prev=qUserPts[qUserPts.length-2];
-      let minD=Infinity;for(const ep of qSamplePts){const d=Math.hypot(p.x-ep.x,p.y-ep.y);if(d<minD)minD=d;}
       const ctx=canvas.getContext('2d');
-      ctx.strokeStyle=minD<25?'#2e8ee0':'rgba(220,80,80,0.4)';
-      ctx.lineWidth=minD<25?5:4;ctx.lineCap='round';ctx.lineJoin='round';
+      ctx.strokeStyle='#2e8ee0';ctx.lineWidth=5;ctx.lineCap='round';ctx.lineJoin='round';
       ctx.beginPath();ctx.moveTo(prev.x,prev.y);ctx.lineTo(p.x,p.y);ctx.stroke();
     }
   }
@@ -126,19 +114,24 @@ function renderWriteQ(pool){
   canvas.addEventListener('touchend', e => { e.preventDefault(); qHandleUp(e); }, { passive: false });
   canvas.addEventListener('touchcancel', e => { e.preventDefault(); qHandleUp(e); }, { passive: false });
 
-  function qHandleEnd(){
+  async function qHandleEnd(){
     if(qDone||answeredLock||!qStrokes.length)return;
     const ok=validateStroke(qUserPts,qSamplePts);
+    // The learner's temporary line disappears as soon as the pointer is
+    // released. Only the guide changes colour after successful validation.
+    qRedraw();
     if(ok){
-      qDrawCompleted(qStrokes[qStrokeIdx]);qStrokeIdx++;
+      qStrokeIdx++;qRenderGhost();
+      qAnimating=true;
+      await animateStrokePath(wrap.querySelector(`path[data-stroke="${qStrokeIdx-1}"]`));
+      qAnimating=false;
       strokeInfo.textContent=`${t('stroke')}: ${qStrokeIdx}/${qStrokes.length}`;
       if(qStrokeIdx>=qStrokes.length){
         qDone=true;fb.textContent=t('correct');fb.className="feedback good";speak(correct.ch);
         answeredLock=true;finishQ(true,correct);
-      } else {qPrepareStroke();qRenderGhost();}
+      } else {qPrepareStroke();}
     } else {
       qAttempts++;
-      qRedraw();for(let i=0;i<qStrokeIdx;i++)qDrawCompleted(qStrokes[i]);
       if(qAttempts>=3){
         fb.innerHTML=`${t('wrong')} <span style="font-family:var(--font-jp)">${correct.ch}</span> = <b>${correct.rm}</b>`;
         fb.className="feedback bad";answeredLock=true;

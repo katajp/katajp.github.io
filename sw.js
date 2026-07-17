@@ -1,4 +1,4 @@
-const CACHE_NAME = "kp-pwa-cache-v13";
+const CACHE_NAME = "kp-pwa-cache-v23";
 const ASSETS = [
   "./",
   "./index.html",

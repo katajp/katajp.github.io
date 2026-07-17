@@ -373,11 +373,12 @@ async function newVocabQuestion(){
 
   // Mixed Vocab Test Stage
   if(stage.id==="vtest"){
-    const formats=["vread", "vrecall", "vtype", "vlisten", "vmatch", "vwrite"];
+    const formats=["vread", "vrecall", "vtype", "vlisten", "vmatch", "vwrite", "vfreewrite"];
     const randomFormat=coverageValuePick(formats,coverageState(s,"vtest-formats"));
 
     if(randomFormat==="vmatch"){ await renderVocabMatchQ(pool); return; }
     if(randomFormat==="vwrite"){ await renderVocabWriteQ(pool); return; }
+    if(randomFormat==="vfreewrite"){ await renderVocabFreeWriteQ(pool); return; }
     correct=weightedPickVocab(pool,coverageState(s,"vtest-prompts"));
 
     const optPool=pool.length>=4?pool:VOCABULARY;
@@ -420,6 +421,7 @@ async function newVocabQuestion(){
   // pattern as the kana quiz engine's match/write dispatch)
   if(stage.id==="vmatch"){ await renderVocabMatchQ(pool); return; }
   if(stage.id==="vwrite"){ await renderVocabWriteQ(pool); return; }
+  if(stage.id==="vfreewrite"){ await renderVocabFreeWriteQ(pool); return; }
   if(!correct)correct=weightedPickVocab(pool,coverageState(s,stage.id+"-prompts"));
 
   // Fallback for legacy sessions
@@ -653,7 +655,7 @@ async function renderVocabWriteQ(pool){
   const wrap=document.createElement("div");wrap.style.cssText="position:relative;width:250px;height:250px;";
   const canvas=document.createElement("canvas");canvas.width=250;canvas.height=250;
   canvas.style.cssText="position:absolute;top:0;left:0;width:100%;height:100%;cursor:crosshair;touch-action:none;border-radius:var(--r-l);z-index:4;";
-  wrap.appendChild(canvas);bg.appendChild(wrap);area.appendChild(bg);
+  wrap.appendChild(canvas);bg.append(wrap,createStrokeCredit());area.appendChild(bg);
 
   const strokeInfo=document.createElement("div");strokeInfo.style.cssText="font-size:13px;color:var(--ink3);font-weight:600;margin-top:8px;";
   strokeInfo.textContent=t('loading');area.appendChild(strokeInfo);
@@ -663,7 +665,7 @@ async function renderVocabWriteQ(pool){
   vocabAnsweredLock=false;
 
   const qSize=250;
-  let qStrokes=[], qStrokeIdx=0, qSamplePts=[], qDrawing=false, qUserPts=[], qAttempts=0, qDone=false;
+  let qStrokes=[], qStrokeIdx=0, qSamplePts=[], qDrawing=false, qUserPts=[], qAttempts=0, qDone=false, qAnimating=false;
 
   function qScalePoints(pts){return pts.map(p=>({x:p.x*qSize/109,y:p.y*qSize/109}));}
   function qGetPos(e){
@@ -700,24 +702,14 @@ async function renderVocabWriteQ(pool){
     let svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 109 109" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:3;display:block;">`;
     qStrokes.forEach((d,i)=>{
       let c=ghost,w='3',o='0.5';
-      if(i<qStrokeIdx){c=done;o='0.3';}
+      if(i<qStrokeIdx){c=done;w='4';o='0.95';}
       else if(i===qStrokeIdx&&!qDone){c=accent;w='4';o='0.5';}
-      svg+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" opacity="${o}"/>`;
+      svg+=`<path data-stroke="${i}" d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" opacity="${o}"/>`;
     });
     svg+=`</svg>`;wrap.insertAdjacentHTML('afterbegin',svg);
   }
 
   function qRedraw(){const ctx=canvas.getContext('2d');ctx.clearRect(0,0,qSize,qSize);qDrawGrid();}
-
-  function qDrawCompleted(d){
-    const {points}=sampleSvgPath(d,60);
-    const scaled=qScalePoints(points);if(!scaled.length)return;
-    const ctx=canvas.getContext('2d');
-    ctx.strokeStyle='#2e8ee0';ctx.lineWidth=5;ctx.lineCap='round';ctx.lineJoin='round';
-    ctx.beginPath();ctx.moveTo(scaled[0].x,scaled[0].y);
-    for(let i=1;i<scaled.length;i++)ctx.lineTo(scaled[i].x,scaled[i].y);
-    ctx.stroke();
-  }
 
   function qPrepareStroke(){
     if(qStrokeIdx>=qStrokes.length)return;
@@ -759,18 +751,16 @@ async function renderVocabWriteQ(pool){
   }
 
   function qHandleDown(e) {
-    if(qDone||vocabAnsweredLock)return;
+    if(qDone||qAnimating||vocabAnsweredLock)return;
     qDrawing=true;qUserPts=[];qUserPts.push(qGetPos(e));
   }
   function qHandleMove(e) {
-    if(!qDrawing||qDone||vocabAnsweredLock)return;
+    if(!qDrawing||qDone||qAnimating||vocabAnsweredLock)return;
     const p=qGetPos(e);qUserPts.push(p);
     if(qUserPts.length>1){
       const prev=qUserPts[qUserPts.length-2];
-      let minD=Infinity;for(const ep of qSamplePts){const d=Math.hypot(p.x-ep.x,p.y-ep.y);if(d<minD)minD=d;}
       const ctx=canvas.getContext('2d');
-      ctx.strokeStyle=minD<25?'#2e8ee0':'rgba(220,80,80,0.4)';
-      ctx.lineWidth=minD<25?5:4;ctx.lineCap='round';ctx.lineJoin='round';
+      ctx.strokeStyle='#2e8ee0';ctx.lineWidth=5;ctx.lineCap='round';ctx.lineJoin='round';
       ctx.beginPath();ctx.moveTo(prev.x,prev.y);ctx.lineTo(p.x,p.y);ctx.stroke();
     }
   }
@@ -789,11 +779,15 @@ async function renderVocabWriteQ(pool){
   canvas.addEventListener('touchend', e => { e.preventDefault(); qHandleUp(e); }, { passive: false });
   canvas.addEventListener('touchcancel', e => { e.preventDefault(); qHandleUp(e); }, { passive: false });
 
-  function qHandleEnd(){
+  async function qHandleEnd(){
     if(qDone||vocabAnsweredLock||!qStrokes.length)return;
     const ok=validateStroke(qUserPts,qSamplePts);
+    qRedraw();
     if(ok){
-      qDrawCompleted(qStrokes[qStrokeIdx]);qStrokeIdx++;
+      qStrokeIdx++;qRenderGhost();
+      qAnimating=true;
+      await animateStrokePath(wrap.querySelector(`path[data-stroke="${qStrokeIdx-1}"]`));
+      qAnimating=false;
       const ch=word[charIdx];
       strokeInfo.innerHTML=`Character ${charIdx+1}/${word.length} (<span style="font-family:var(--font-jp);font-weight:700;">${ch}</span>) — Stroke: ${qStrokeIdx}/${qStrokes.length}`;
       if(qStrokeIdx>=qStrokes.length){
@@ -802,11 +796,9 @@ async function renderVocabWriteQ(pool){
         setTimeout(()=>{loadNextChar();bg.style.opacity="1";}, 500);
       } else {
         qPrepareStroke();
-        qRenderGhost();
       }
     } else {
       qAttempts++;
-      qRedraw();for(let i=0;i<qStrokeIdx;i++)qDrawCompleted(qStrokes[i]);
       if(qAttempts>=3){
         fb.innerHTML=`Wrong! <b>${correct.word}</b> = <b>${correct.reading}</b>`;
         fb.className="feedback bad";vocabAnsweredLock=true;
@@ -820,6 +812,83 @@ async function renderVocabWriteQ(pool){
   }
 
   loadNextChar();
+}
+
+async function renderVocabFreeWriteQ(pool){
+  const stageId=VOCAB_STAGES[activeVocabSession.stageIdx]?.id||"vfreewrite";
+  const correct=weightedPickVocab(pool,coverageState(activeVocabSession,stageId+"-prompts"));
+  await ensureThaiMeanings([correct]);
+  const chars=[...correct.word],area=document.getElementById("vqaArea");
+  area.innerHTML="";vocabAnsweredLock=false;
+
+  const prompt=document.createElement("div");prompt.className="q-romaji";prompt.style.fontSize="24px";prompt.textContent=vocabMeaning(correct);area.appendChild(prompt);
+  const reading=document.createElement("div");reading.className="freewrite-instruction";reading.textContent=correct.reading;area.appendChild(reading);
+
+  const crumb=document.createElement("div");crumb.className="vocab-freewrite-crumb";
+  const crumbItems=chars.map((char,index)=>{const item=document.createElement("span");item.dataset.index=index;crumb.appendChild(item);return item;});area.appendChild(crumb);
+
+  const meter=document.createElement("div");meter.className="freewrite-meter";meter.setAttribute("role","progressbar");meter.setAttribute("aria-valuemin","0");
+  const meterLabel=document.createElement("div");meterLabel.className="freewrite-meter-label";meterLabel.textContent=t('loadingStroke');
+  const meterBars=document.createElement("div");meterBars.className="freewrite-meter-bars";meter.append(meterLabel,meterBars);area.appendChild(meter);
+
+  const board=document.createElement("div");board.className="freewrite-board";
+  const canvas=document.createElement("canvas");canvas.width=320;canvas.height=320;canvas.setAttribute("aria-label",t('blankWritingArea'));
+  const answerLayer=document.createElementNS("http://www.w3.org/2000/svg","svg");answerLayer.classList.add("freewrite-answer-layer");answerLayer.setAttribute("viewBox","0 0 109 109");answerLayer.setAttribute("aria-hidden","true");
+  board.append(canvas,answerLayer,createStrokeCredit());area.appendChild(board);
+
+  const verdict=document.createElement("div");verdict.className="freewrite-verdict";verdict.hidden=true;verdict.setAttribute("role","status");area.appendChild(verdict);
+  const actions=document.createElement("div");actions.className="freewrite-controls";area.appendChild(actions);
+
+  const ctx=canvas.getContext("2d"),size=canvas.width;
+  let charIndex=0,strokeIndex=0,expectedStrokes=[],expectedSamples=[],results=[],currentStroke=[];
+  let drawing=false,loading=true,checking=false,characterDone=false,overallOk=true;
+
+  function updateCrumb(){
+    crumbItems.forEach((item,index)=>{
+      item.className=index<charIndex?"is-done":index===charIndex?"is-current":"";
+      item.textContent=index<charIndex?chars[index]:String(index+1);
+    });
+  }
+  function position(e){const rect=canvas.getBoundingClientRect();return{x:(e.clientX-rect.left)*size/rect.width,y:(e.clientY-rect.top)*size/rect.height};}
+  function renderMeter(){
+    meterBars.innerHTML="";expectedStrokes.forEach((_,index)=>{const bar=document.createElement("span");bar.className="freewrite-meter-bar";if(results[index]===true)bar.classList.add("is-correct");else if(results[index]===false)bar.classList.add("is-wrong");meterBars.appendChild(bar);});
+    meter.setAttribute("aria-valuemax",String(expectedStrokes.length));meter.setAttribute("aria-valuenow",String(results.length));
+    meterLabel.textContent=`${t('stroke')}: ${results.length}/${expectedStrokes.length}`;
+  }
+  function start(e){if(loading||checking||characterDone||vocabAnsweredLock)return;e.preventDefault();drawing=true;currentStroke=[position(e)];try{canvas.setPointerCapture(e.pointerId);}catch(error){}}
+  function move(e){
+    if(!drawing||checking||characterDone||vocabAnsweredLock)return;e.preventDefault();const next=position(e),last=currentStroke[currentStroke.length-1];if(Math.hypot(next.x-last.x,next.y-last.y)<1.5)return;
+    currentStroke.push(next);ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--ink').trim()||'#d7dce2';ctx.lineWidth=9;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(next.x,next.y);ctx.stroke();
+  }
+  function end(e){if(!drawing)return;drawing=false;try{canvas.releasePointerCapture(e.pointerId);}catch(error){}if(currentStroke.length>1)checkStroke();else currentStroke=[];}
+  function revealStroke(index){
+    const path=document.createElementNS("http://www.w3.org/2000/svg","path");path.setAttribute("d",expectedStrokes[index]);answerLayer.appendChild(path);
+    return new Promise(resolve=>{const length=path.getTotalLength();path.style.strokeDasharray=String(length);path.style.strokeDashoffset=String(length);path.style.opacity="1";const duration=360+Math.min(length*2,440),started=performance.now();
+      function tick(now){if(!path.isConnected){resolve();return;}const progress=Math.min((now-started)/duration,1);path.style.strokeDashoffset=String(length*Math.pow(1-progress,3));if(progress<1)requestAnimationFrame(tick);else{path.style.strokeDashoffset="0";resolve();}}
+      requestAnimationFrame(tick);
+    });
+  }
+  function finishCharacter(){
+    characterDone=true;checking=false;vocabAnsweredLock=true;board.classList.add("is-answer");
+    const charOk=results.every(Boolean);overallOk=overallOk&&charOk;board.classList.add(charOk?"is-correct":"is-wrong");
+    crumbItems[charIndex].textContent=chars[charIndex];crumbItems[charIndex].className=charOk?"is-done":"is-wrong";
+    verdict.hidden=false;verdict.className=`freewrite-verdict ${charOk?'is-correct':'is-wrong'}`;verdict.textContent=charOk?t('freeWriteAnswerCorrect'):t('freeWriteAnswerWrong');
+    actions.innerHTML="";const next=document.createElement("button");next.className="btn";next.textContent=charIndex===chars.length-1?t('nextQuestion'):t('nextCharacter');
+    next.onclick=()=>{if(charIndex===chars.length-1){finishVocabQ(overallOk,correct);return;}charIndex++;loadCharacter();};actions.appendChild(next);
+  }
+  function checkStroke(){
+    if(checking||characterDone)return;checking=true;vocabAnsweredLock=true;const result=scoreFreeWriteStroke(currentStroke,expectedSamples[strokeIndex]);results[strokeIndex]=result.ok;currentStroke=[];ctx.clearRect(0,0,size,size);renderMeter();
+    revealStroke(strokeIndex).then(()=>{strokeIndex++;if(strokeIndex>=expectedStrokes.length)finishCharacter();else{checking=false;vocabAnsweredLock=false;}});
+  }
+  async function loadCharacter(){
+    loading=true;checking=false;characterDone=false;vocabAnsweredLock=true;strokeIndex=0;expectedStrokes=[];expectedSamples=[];results=[];currentStroke=[];ctx.clearRect(0,0,size,size);answerLayer.innerHTML="";actions.innerHTML="";verdict.hidden=true;board.classList.remove("is-answer","is-correct","is-wrong");updateCrumb();meterLabel.textContent=t('loadingStroke');meterBars.innerHTML="";
+    try{
+      const {paths}=await fetchCharSvgPaths(chars[charIndex]);expectedStrokes=[...paths].map(path=>path.getAttribute('d')).filter(Boolean);if(!expectedStrokes.length)throw new Error('No stroke data');expectedSamples=expectedStrokes.map(d=>sampleSvgPath(d,64).points.map(point=>({x:point.x*size/109,y:point.y*size/109})));loading=false;vocabAnsweredLock=false;renderMeter();
+    }catch(error){meterLabel.textContent=t('strokeUnavailable');actions.innerHTML="";const retry=document.createElement("button");retry.className="btn";retry.textContent=t('retryStrokeLoad');retry.onclick=loadCharacter;actions.appendChild(retry);}
+  }
+
+  canvas.addEventListener('pointerdown',start);canvas.addEventListener('pointermove',move);canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);
+  updateCrumb();loadCharacter();
 }
 
 function renderVocabStudyStage(area,correct){

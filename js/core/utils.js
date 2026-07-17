@@ -60,3 +60,30 @@ function validateStroke(userPts,expectedPts){
   }
   return totalDistance/sampleCount<35;
 }
+
+function createStrokeCredit(){
+  const credit=document.createElement('a');
+  credit.className='stroke-credit';
+  credit.href='https://kanjivg.tagaini.net/';
+  credit.target='_blank';credit.rel='noopener noreferrer';
+  credit.textContent='KanjiVG · Ulrich Apel';
+  credit.title='Stroke data by KanjiVG, created by Ulrich Apel';
+  return credit;
+}
+
+function animateStrokePath(path){
+  if(!path)return Promise.resolve();
+  return new Promise(resolve=>{
+    const length=path.getTotalLength();
+    path.style.strokeDasharray=String(length);path.style.strokeDashoffset=String(length);
+    const duration=360+Math.min(length*2,440),started=performance.now();
+    function tick(now){
+      if(!path.isConnected){resolve();return;}
+      const progress=Math.min((now-started)/duration,1);
+      path.style.strokeDashoffset=String(length*Math.pow(1-progress,3));
+      if(progress<1)requestAnimationFrame(tick);
+      else{path.style.strokeDashoffset='0';resolve();}
+    }
+    requestAnimationFrame(tick);
+  });
+}
