@@ -27,7 +27,10 @@ const LANG={
     startVocab:'🚀 Start vocabulary quiz',wordsSelected:'words selected',moreAfterLoad:' + more after loading',noWords:'No words match this filter.',
     loadingExtra:'Loading extra words…',reviewNow:'Review now',gotIt:'Got it! ➔',learnPrompt:'Learn this word, then choose the highlighted answer to continue.',
     dragMatch:'Drag each word to its matching meaning.',allMatched:'All matched! 🎉',typeMeaning:'type meaning or reading…',
-    traceCharacters:'Trace the characters',translationBy:'Automatic Thai translation by MyMemory',hiraName:'Hiragana',kataName:'Katakana',replay:'🔄 Replay',listen:'🔊 Listen',loadingStroke:'Loading stroke order…',strokeUnavailable:'Stroke order data unavailable',showDetails:'Show details'
+    traceCharacters:'Trace the characters',translationBy:'Automatic Thai translation by MyMemory',hiraName:'Hiragana',kataName:'Katakana',replay:'🔄 Replay',listen:'🔊 Listen',loadingStroke:'Loading stroke order…',strokeUnavailable:'Stroke order data unavailable',showDetails:'Show details',
+    drawFromMemory:'Write from memory. The answer is checked automatically when all strokes are drawn.',blankWritingArea:'Blank writing area',clearCanvas:'Clear canvas',revealAnswer:'Show answer',answerIs:'Answer',practiceAgain:'Practice again',available:'Available',
+    freeWriteCorrect:'Correct — every stroke matches!',freeWriteWrong:'Not quite — watch the correct stroke order.',revealingStrokes:'Showing the correct strokes one by one…',
+    freeWriteTryAgain:'Not quite. One incorrect stroke is shown — try again.',freeWriteAnswerCorrect:'Correct. Here is the true stroke order.',freeWriteAnswerWrong:'Here is the true stroke order.',attempt:'Attempt',nextQuestion:'Next question ➔',strokeFallback:'Stroke data is unavailable. Show the answer instead.'
   },
   th:{
     chart:'あ ตาราง',quiz:'練 แบบทดสอบ',progress:'記 ความก้าวหน้า',vocab:'語 คันจิ',
@@ -55,7 +58,10 @@ const LANG={
     startVocab:'🚀 เริ่มแบบทดสอบคำศัพท์',wordsSelected:'คำที่เลือก',moreAfterLoad:' + เพิ่มหลังโหลด',noWords:'ไม่พบคำศัพท์ตรงกับตัวกรองนี้',
     loadingExtra:'กำลังโหลดคำศัพท์เสริม…',reviewNow:'ทบทวนตอนนี้',gotIt:'เข้าใจแล้ว! ➔',learnPrompt:'เรียนคำนี้ แล้วเลือกคำตอบที่ไฮไลต์เพื่อทำต่อ',
     dragMatch:'ลากคำศัพท์ไปจับคู่กับความหมาย',allMatched:'จับคู่ครบแล้ว! 🎉',typeMeaning:'พิมพ์ความหมายหรือคำอ่าน…',
-    traceCharacters:'ลากตามตัวอักษร',translationBy:'คำแปลไทยอัตโนมัติโดย MyMemory',hiraName:'ฮิรางานะ',kataName:'คาตาคานะ',replay:'🔄 เล่นซ้ำ',listen:'🔊 ฟังเสียง',loadingStroke:'กำลังโหลดลำดับขีด…',strokeUnavailable:'ไม่พบข้อมูลลำดับขีด',showDetails:'ดูรายละเอียด'
+    traceCharacters:'ลากตามตัวอักษร',translationBy:'คำแปลไทยอัตโนมัติโดย MyMemory',hiraName:'ฮิรางานะ',kataName:'คาตาคานะ',replay:'🔄 เล่นซ้ำ',listen:'🔊 ฟังเสียง',loadingStroke:'กำลังโหลดลำดับขีด…',strokeUnavailable:'ไม่พบข้อมูลลำดับขีด',showDetails:'ดูรายละเอียด',
+    drawFromMemory:'เขียนคานะจากความจำ ระบบจะตรวจอัตโนมัติเมื่อวาดครบทุกขีด',blankWritingArea:'พื้นที่เขียนเปล่า',clearCanvas:'ล้างกระดาน',revealAnswer:'ดูคำตอบ',answerIs:'คำตอบ',practiceAgain:'ฝึกอีกครั้ง',available:'เลือกได้',
+    freeWriteCorrect:'วาดถูกต้องครบทุกขีด!',freeWriteWrong:'ยังไม่ถูกต้อง — ดูลำดับขีดที่ถูกต้อง',revealingStrokes:'กำลังเฉลยลำดับขีดทีละขีด…',
+    freeWriteTryAgain:'ยังไม่ถูกต้อง — เฉลยขีดที่ผิด 1 ขีดแล้ว ลองอีกครั้ง',freeWriteAnswerCorrect:'วาดถูกต้อง นี่คือลำดับขีดจริง',freeWriteAnswerWrong:'นี่คือลำดับขีดจริง',attempt:'ครั้งที่',nextQuestion:'ข้อต่อไป ➔',strokeFallback:'ไม่พบข้อมูลลำดับขีด จะแสดงคำตอบแทน'
   }
 };
 
@@ -64,10 +70,16 @@ const VOCAB_STAGE_TH={
   vtype:['พิมพ์','พิมพ์ความหมายหรือคำอ่าน'],vlisten:['ฟัง','เสียง → คำศัพท์'],vmatch:['จับคู่','ลากและวาง'],
   vwrite:['เขียน','ลากตามตัวอักษร'],vtest:['ทดสอบ','รวมหลายรูปแบบ']
 };
+const KANA_STAGE_TH={
+  intro:['แนะนำ','เรียนรู้ตัวอักษร'],mc:['อ่าน','คานะ → โรมาจิ'],rev:['ทบทวน','โรมาจิ → คานะ'],type:['พิมพ์','พิมพ์โรมาจิ'],
+  listen:['ฟัง','เสียง → คานะ'],match:['จับคู่','ลากและวาง'],write:['เขียนตามเส้น','ลากตามลำดับขีด'],freewrite:['เขียนจากความจำ','เขียนโดยไม่มีเส้นช่วย'],test:['ทดสอบ','รวมหลายรูปแบบ']
+};
 const CATEGORY_TH={greetings:'คำทักทาย',numbers:'ตัวเลข',family:'ครอบครัว',food:'อาหารและเครื่องดื่ม',animals:'สัตว์',time:'เวลาและวัน',verbs:'คำกริยาที่ใช้บ่อย',adjectives:'คำคุณศัพท์',work:'งานและธุรกิจ',society:'สังคมและการเมือง',nature:'ธรรมชาติและสิ่งแวดล้อม',emotions:'อารมณ์และความรู้สึก',health:'สุขภาพและร่างกาย',abstract:'แนวคิดนามธรรม',extra:'คำศัพท์เสริมออนไลน์'};
 
 let lang=localStorage.getItem('kp-lang')||'en';
 function t(key){return LANG[lang]?.[key]||LANG.en[key]||key;}
+function kanaStageName(stage){return lang==='th'?(KANA_STAGE_TH[stage.id]?.[0]||stage.name):stage.name;}
+function kanaStageDesc(stage){return lang==='th'?(KANA_STAGE_TH[stage.id]?.[1]||stage.desc):stage.desc;}
 function vocabStageName(stage){return lang==='th'?(VOCAB_STAGE_TH[stage.id]?.[0]||stage.name):stage.name;}
 function vocabStageDesc(stage){return lang==='th'?(VOCAB_STAGE_TH[stage.id]?.[1]||stage.desc):stage.desc;}
 function vocabCategoryLabel(cat){return lang==='th'?(CATEGORY_TH[cat.id]||cat.label):cat.label;}
@@ -93,10 +105,13 @@ function initNavLabels(){
 updLang();applyUiTranslations();initNavLabels();
 langBtn.onclick=()=>{
   lang=lang==='en'?'th':'en';localStorage.setItem('kp-lang',lang);updLang();applyUiTranslations();initNavLabels();renderChart();
-  if(document.getElementById('panel-quiz').classList.contains('active')&&document.getElementById('quizSetup').style.display!=='none')renderQuizSetup();
+  if(document.getElementById('panel-quiz').classList.contains('active')){
+    if(document.getElementById('quizSetup').style.display!=='none')renderQuizSetup();
+    else if(typeof activeSession!=='undefined'&&activeSession)updateQuizProgress();
+  }
   if(document.getElementById('panel-vocab').classList.contains('active')){
     if(document.getElementById('vocabSetup').style.display!=='none')renderVocabSetup();
-    else if(typeof activeVocabSession!=='undefined'&&activeVocabSession)renderVocabQuizUI();
+    else if(typeof activeVocabSession!=='undefined'&&activeVocabSession)updateVocabQuizProgress();
   }
   if(document.getElementById('panel-progress').classList.contains('active'))refreshProgress();
 };

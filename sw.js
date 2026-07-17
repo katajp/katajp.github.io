@@ -1,4 +1,4 @@
-const CACHE_NAME = "kp-pwa-cache-v9";
+const CACHE_NAME = "kp-pwa-cache-v13";
 const ASSETS = [
   "./",
   "./index.html",
@@ -35,6 +35,7 @@ const ASSETS = [
   "./js/stages/listening.js",
   "./js/stages/matching.js",
   "./js/stages/writing.js",
+  "./js/stages/freeWriting.js",
   "./js/stages/vocabulary.js",
   "./js/stages/sentence.js",
   "./js/stages/grammar.js",

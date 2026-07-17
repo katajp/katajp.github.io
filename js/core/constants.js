@@ -1,7 +1,7 @@
 /* ================================================================
    APP-WIDE CONSTANTS
    ================================================================ */
-const APP_VERSION = "v0.30";
+const APP_VERSION = "0.35b";
 
 const STAGES=[
   {id:"intro",name:"Intro",desc:"learn the character"},
@@ -11,6 +11,7 @@ const STAGES=[
   {id:"listen",name:"Listen",desc:"audio → kana"},
   {id:"match",name:"Match",desc:"drag & drop"},
   {id:"write",name:"Write",desc:"trace the character"},
+  {id:"freewrite",name:"Free Write",desc:"write from memory"},
   {id:"test",name:"Test",desc:"mixed formats"}
 ];
 const Q_PER_STAGE=20;

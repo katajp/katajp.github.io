@@ -275,36 +275,22 @@ function renderVocabQuizUI(){
 
   // Stage navigator (compact "< Stage N >" indicator)
   const stageCard=document.createElement("div");stageCard.className="card";
-  if(savedVocabRealStageIdx>=0 && s.stageIdx!==savedVocabRealStageIdx){
-    const retBtn=document.createElement("button");retBtn.className="btn";retBtn.style.cssText="margin-bottom:12px;background:var(--accent);";
-    retBtn.textContent=t('returnTo')+" ("+t('stage')+" "+(savedVocabRealStageIdx+1)+": "+vocabStageName(VOCAB_STAGES[savedVocabRealStageIdx])+")";
-    retBtn.onclick=()=>{
-      s.stageIdx=savedVocabRealStageIdx;s.questionIdx=savedVocabRealQuestionIdx;savedVocabRealStageIdx=-1;savedVocabRealQuestionIdx=0;
-      saveVocabSessions();renderVocabQuizUI();newVocabQuestion();
-    };
-    stageCard.appendChild(retBtn);
-  }
   const viewIdx=Math.min(s.stageIdx,VOCAB_STAGES.length-1);
-  const maxIdx=Math.min(savedVocabRealStageIdx>=0?savedVocabRealStageIdx:s.stageIdx,VOCAB_STAGES.length-1);
+  const maxIdx=VOCAB_STAGES.length-1;
   const viewStage=VOCAB_STAGES[viewIdx];
-  const allComplete=s.stageIdx>=VOCAB_STAGES.length&&savedVocabRealStageIdx<0;
-  const isRealCurrent=!allComplete&&savedVocabRealStageIdx<0&&viewIdx===maxIdx;
+  const allComplete=s.stageIdx>=VOCAB_STAGES.length;
+  const isRealCurrent=!allComplete&&viewIdx===s.stageIdx;
   const done=s.stagesCompleted.includes(viewStage.id);
   let statusText,statusClass;
   if(allComplete){statusText=t('completed');statusClass="done";}
   else if(isRealCurrent){statusText=t('inProgress');statusClass="current";}
   else if(done){statusText=t('replaying');statusClass="done";}
-  else{statusText=t('completed');statusClass="done";}
+  else{statusText=t('available');statusClass="current";}
   const navigateVocabStage=delta=>{
     const target=viewIdx+delta;
     if(target<0||target>maxIdx)return;
-    if(target===maxIdx&&savedVocabRealStageIdx>=0){
-      s.stageIdx=savedVocabRealStageIdx;s.questionIdx=savedVocabRealQuestionIdx;savedVocabRealStageIdx=-1;savedVocabRealQuestionIdx=0;
-    } else {
-      if(savedVocabRealStageIdx<0){savedVocabRealStageIdx=Math.min(s.stageIdx,VOCAB_STAGES.length-1);savedVocabRealQuestionIdx=s.questionIdx;}
-      s.stageIdx=target;s.questionIdx=0;
-    }
-    saveVocabSessions();renderVocabQuizUI();newVocabQuestion();
+    s.stageIdx=target;s.questionIdx=0;savedVocabRealStageIdx=-1;savedVocabRealQuestionIdx=0;
+    saveVocabSessions();renderVocabQuizUI();
   };
   const stageNav=document.createElement("div");stageNav.className="stage-nav";
   stageNav.innerHTML=`

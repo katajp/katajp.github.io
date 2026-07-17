@@ -9,12 +9,11 @@ function updateQuizProgress(){
   const currentStageTotal=getKanaStageQCount(s.stageIdx,s.charCount);
 
   const plabel=document.querySelector(".qa-plabel");
-  if(plabel)plabel.innerHTML=`<span>Stage ${s.stageIdx+1}/${STAGES.length} — Question ${s.questionIdx}/${currentStageTotal}</span><span>${globalPct}%</span>`;
+  if(plabel)plabel.innerHTML=`<span>${t('stage')} ${s.stageIdx+1}/${STAGES.length} — ${t('question')} ${s.questionIdx}/${currentStageTotal}</span><span>${globalPct}%</span>`;
   const bar=document.querySelector(".qa-bar-in");
   if(bar)bar.style.width=globalPct+"%";
   const stageEl=document.querySelector(".qa-stage");
-  if(stageEl)stageEl.textContent=stg.name+" — "+stg.desc;
+  if(stageEl)stageEl.textContent=kanaStageName(stg)+" — "+kanaStageDesc(stg);
   document.getElementById("qScore").textContent=s.score;
   document.getElementById("qStreak").textContent=s.streak;
 }
-

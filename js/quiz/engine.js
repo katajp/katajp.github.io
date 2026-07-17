@@ -16,61 +16,46 @@ function renderQuizUI(){
   const top=document.createElement("div");top.className="card";
   top.innerHTML=`
     <div class="qa-top">
-      <div class="qa-stage">${stg.name} — ${stg.desc}</div>
-      <button class="qa-exit" id="exitBtn">✕ Exit</button>
+      <div class="qa-stage">${kanaStageName(stg)} — ${kanaStageDesc(stg)}</div>
+      <button class="qa-exit" id="exitBtn">${t('exit')}</button>
     </div>
     <div class="qa-progress">
-      <div class="qa-plabel"><span>Stage ${s.stageIdx+1}/${STAGES.length} — Question ${s.questionIdx}/${currentStageTotal}</span><span>${globalPct}%</span></div>
+      <div class="qa-plabel"><span>${t('stage')} ${s.stageIdx+1}/${STAGES.length} — ${t('question')} ${s.questionIdx}/${currentStageTotal}</span><span>${globalPct}%</span></div>
       <div class="qa-bar-out"><div class="qa-bar-in" style="width:${globalPct}%"></div></div>
     </div>
     <div class="qa-toast" id="qToast"></div>
     <div class="qa-score">
-      <span>Score: <b id="qScore">${s.score}</b></span>
-      <span>Streak: <b id="qStreak">${s.streak}</b></span>
+      <span>${t('score')}: <b id="qScore">${s.score}</b></span>
+      <span>${t('streak')}: <b id="qStreak">${s.streak}</b></span>
     </div>`;
   el.appendChild(top);
   top.querySelector("#exitBtn").onclick=exitQuiz;
 
   // Stage navigator (compact "< Stage N >" indicator)
   const stageCard=document.createElement("div");stageCard.className="card";
-  // Return to current stage button (shown when replaying a completed stage)
-  if(savedRealStageIdx>=0 && s.stageIdx!==savedRealStageIdx){
-    const retBtn=document.createElement("button");retBtn.className="btn";retBtn.style.cssText="margin-bottom:12px;background:var(--accent);";
-    retBtn.textContent="↩ Return to current stage (Stage "+(savedRealStageIdx+1)+": "+STAGES[savedRealStageIdx].name+")";
-    retBtn.onclick=()=>{
-      s.stageIdx=savedRealStageIdx;s.questionIdx=savedRealQuestionIdx;savedRealStageIdx=-1;savedRealQuestionIdx=0;
-      saveSessions();renderQuizUI();newQuizQuestion();
-    };
-    stageCard.appendChild(retBtn);
-  }
   const viewIdx=Math.min(s.stageIdx,STAGES.length-1);
-  const maxIdx=Math.min(savedRealStageIdx>=0?savedRealStageIdx:s.stageIdx,STAGES.length-1);
+  const maxIdx=STAGES.length-1;
   const viewStage=STAGES[viewIdx];
-  const allComplete=s.stageIdx>=STAGES.length&&savedRealStageIdx<0;
-  const isRealCurrent=!allComplete&&savedRealStageIdx<0&&viewIdx===maxIdx;
+  const allComplete=s.stageIdx>=STAGES.length;
+  const isRealCurrent=!allComplete&&viewIdx===s.stageIdx;
   const done=s.stagesCompleted.includes(viewStage.id);
   let statusText,statusClass;
-  if(allComplete){statusText="Completed";statusClass="done";}
-  else if(isRealCurrent){statusText="In progress";statusClass="current";}
-  else if(done){statusText="Replaying";statusClass="done";}
-  else{statusText="Completed";statusClass="done";}
+  if(allComplete){statusText=t('completed');statusClass="done";}
+  else if(isRealCurrent){statusText=t('inProgress');statusClass="current";}
+  else if(done){statusText=t('completed');statusClass="done";}
+  else{statusText=t('available');statusClass="";}
   const navigateStage=delta=>{
     const target=viewIdx+delta;
     if(target<0||target>maxIdx)return;
-    if(target===maxIdx&&savedRealStageIdx>=0){
-      s.stageIdx=savedRealStageIdx;s.questionIdx=savedRealQuestionIdx;savedRealStageIdx=-1;savedRealQuestionIdx=0;
-    } else {
-      if(savedRealStageIdx<0){savedRealStageIdx=Math.min(s.stageIdx,STAGES.length-1);savedRealQuestionIdx=s.questionIdx;}
-      s.stageIdx=target;s.questionIdx=0;
-    }
-    saveSessions();renderQuizUI();newQuizQuestion();
+    s.stageIdx=target;s.questionIdx=0;savedRealStageIdx=-1;savedRealQuestionIdx=0;
+    saveSessions();renderQuizUI();
   };
   const stageNav=document.createElement("div");stageNav.className="stage-nav";
   stageNav.innerHTML=`
     <button class="stage-nav-arrow" id="stagePrevBtn" ${viewIdx<=0?"disabled":""}>‹</button>
     <div class="stage-nav-info">
-      <div class="stage-nav-num">Stage ${viewIdx+1}/${STAGES.length}</div>
-      <div class="stage-nav-name">${viewStage.name} <span class="stage-nav-status ${statusClass}">${statusText}</span></div>
+      <div class="stage-nav-num">${t('stage')} ${viewIdx+1}/${STAGES.length}</div>
+      <div class="stage-nav-name">${kanaStageName(viewStage)} <span class="stage-nav-status ${statusClass}">${statusText}</span></div>
     </div>
     <button class="stage-nav-arrow" id="stageNextBtn" ${viewIdx>=maxIdx?"disabled":""}>›</button>`;
   stageNav.querySelector("#stagePrevBtn").onclick=()=>navigateStage(-1);
@@ -152,11 +137,12 @@ function newQuizQuestion(){
 
   // Mixed Test stage selection
   if(stage.id==="test"){
-    const formats=["mc", "rev", "type", "listen", "match", "write"];
+    const formats=["mc", "rev", "type", "listen", "match", "write", "freewrite"];
     const randomFormat=coverageValuePick(formats,coverageState(s,"test-formats"));
 
     if(randomFormat==="match"){ renderMatchQ(pool); return; }
     if(randomFormat==="write"){ renderWriteQ(pool); return; }
+    if(randomFormat==="freewrite"){ renderFreeWriteQ(pool); return; }
 
     const correct=weightedPick(pool,coverageState(s,"test-prompts"));
     const optPool=pool.length>=4?pool:ALL_KANA;
@@ -186,6 +172,7 @@ function newQuizQuestion(){
   // Individual stages 1-6
   if(stage.id==="match"){renderMatchQ(pool);return;}
   if(stage.id==="write"){renderWriteQ(pool);return;}
+  if(stage.id==="freewrite"){renderFreeWriteQ(pool);return;}
 
   const correct=weightedPick(pool,coverageState(s,stage.id+"-prompts"));
   const optPool=pool.length>=4?pool:ALL_KANA;
