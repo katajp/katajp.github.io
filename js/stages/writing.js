@@ -149,15 +149,20 @@ function renderWriteQ(pool){
     }
   }
 
-  // Init
-  (async()=>{
-    const code=correct.ch.codePointAt(0).toString(16).padStart(5,'0');
+  // Init. A loading error must never auto-pass the question.
+  async function qLoadStrokeData(){
+    strokeInfo.textContent=t('loadingStroke');
+    area.querySelector('.stroke-retry-btn')?.remove();
     try{
       const {paths}=await fetchCharSvgPaths(correct.ch);
       qStrokes=[...paths].map(p=>p.getAttribute('d'));
       if(qStrokes.length){qPrepareStroke();qRenderGhost();}
       strokeInfo.textContent=`${t('stroke')}: 0/${qStrokes.length}`;
       qRedraw();
-    }catch(e){strokeInfo.textContent='Stroke data unavailable';finishQ(true,correct);}
-  })();
+    }catch(error){
+      strokeInfo.textContent=t('strokeUnavailable');
+      const retry=document.createElement('button');retry.className='btn stroke-retry-btn';retry.textContent=t('retryStrokeLoad');retry.onclick=qLoadStrokeData;area.appendChild(retry);
+    }
+  }
+  qLoadStrokeData();
 }

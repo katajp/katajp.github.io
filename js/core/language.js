@@ -30,7 +30,7 @@ const LANG={
     traceCharacters:'Trace the characters',translationBy:'Automatic Thai translation by MyMemory',hiraName:'Hiragana',kataName:'Katakana',replay:'🔄 Replay',listen:'🔊 Listen',loadingStroke:'Loading stroke order…',strokeUnavailable:'Stroke order data unavailable',showDetails:'Show details',
     drawFromMemory:'Write from memory. The answer is checked automatically when all strokes are drawn.',blankWritingArea:'Blank writing area',clearCanvas:'Clear canvas',revealAnswer:'Show answer',answerIs:'Answer',practiceAgain:'Practice again',available:'Available',
     freeWriteCorrect:'Correct — every stroke matches!',freeWriteWrong:'Not quite — watch the correct stroke order.',revealingStrokes:'Showing the correct strokes one by one…',
-    freeWriteTryAgain:'Not quite. One incorrect stroke is shown — try again.',freeWriteAnswerCorrect:'Correct. Here is the true stroke order.',freeWriteAnswerWrong:'Here is the true stroke order.',attempt:'Attempt',nextQuestion:'Next question ➔',strokeFallback:'Stroke data is unavailable. Show the answer instead.'
+    freeWriteTryAgain:'Not quite. One incorrect stroke is shown — try again.',freeWriteAnswerCorrect:'Correct. Here is the true stroke order.',freeWriteAnswerWrong:'Here is the true stroke order.',attempt:'Attempt',nextQuestion:'Next question ➔',retryStrokeLoad:'Retry loading stroke data'
   },
   th:{
     chart:'あ ตาราง',quiz:'練 แบบทดสอบ',progress:'記 ความก้าวหน้า',vocab:'語 คันจิ',
@@ -61,7 +61,7 @@ const LANG={
     traceCharacters:'ลากตามตัวอักษร',translationBy:'คำแปลไทยอัตโนมัติโดย MyMemory',hiraName:'ฮิรางานะ',kataName:'คาตาคานะ',replay:'🔄 เล่นซ้ำ',listen:'🔊 ฟังเสียง',loadingStroke:'กำลังโหลดลำดับขีด…',strokeUnavailable:'ไม่พบข้อมูลลำดับขีด',showDetails:'ดูรายละเอียด',
     drawFromMemory:'เขียนคานะจากความจำ ระบบจะตรวจอัตโนมัติเมื่อวาดครบทุกขีด',blankWritingArea:'พื้นที่เขียนเปล่า',clearCanvas:'ล้างกระดาน',revealAnswer:'ดูคำตอบ',answerIs:'คำตอบ',practiceAgain:'ฝึกอีกครั้ง',available:'เลือกได้',
     freeWriteCorrect:'วาดถูกต้องครบทุกขีด!',freeWriteWrong:'ยังไม่ถูกต้อง — ดูลำดับขีดที่ถูกต้อง',revealingStrokes:'กำลังเฉลยลำดับขีดทีละขีด…',
-    freeWriteTryAgain:'ยังไม่ถูกต้อง — เฉลยขีดที่ผิด 1 ขีดแล้ว ลองอีกครั้ง',freeWriteAnswerCorrect:'วาดถูกต้อง นี่คือลำดับขีดจริง',freeWriteAnswerWrong:'นี่คือลำดับขีดจริง',attempt:'ครั้งที่',nextQuestion:'ข้อต่อไป ➔',strokeFallback:'ไม่พบข้อมูลลำดับขีด จะแสดงคำตอบแทน'
+    freeWriteTryAgain:'ยังไม่ถูกต้อง — เฉลยขีดที่ผิด 1 ขีดแล้ว ลองอีกครั้ง',freeWriteAnswerCorrect:'วาดถูกต้อง นี่คือลำดับขีดจริง',freeWriteAnswerWrong:'นี่คือลำดับขีดจริง',attempt:'ครั้งที่',nextQuestion:'ข้อต่อไป ➔',retryStrokeLoad:'ลองโหลดข้อมูลลำดับขีดอีกครั้ง'
   }
 };
 

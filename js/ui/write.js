@@ -170,23 +170,10 @@ async function loadWriteChar(){
   redrawCanvas();
   renderGhostSVG();
 
-  // Fetch KanjiVG
-  const code=wChar.ch.codePointAt(0).toString(16).padStart(5,'0');
+  // Fetch KanjiVG using the shared loader (with CDN fallback and SVG repair).
   try{
-    let svgText;
-    if(_svgCache[code]){
-      svgText=_svgCache[code];
-    } else {
-      const resp=await fetch(`https://raw.githubusercontent.com/KanjiVG/kanjivg/master/kanji/${code}.svg`);
-      if(!resp.ok)throw new Error('Not found');
-      svgText=await resp.text();
-      _svgCache[code]=svgText;
-    }
-
-    const parser=new DOMParser();
-    const doc=parser.parseFromString(svgText,'image/svg+xml');
-    const paths=doc.querySelectorAll('path[id*="-s"]');
-    wStrokes=[...paths].map(p=>p.getAttribute('d'));
+    const {paths}=await fetchCharSvgPaths(wChar.ch);
+    wStrokes=[...paths].map(p=>p.getAttribute('d')).filter(Boolean);
 
     if(wStrokes.length){
       prepareCurrentStroke();
@@ -330,4 +317,3 @@ document.getElementById('writeHintBtn').onclick=()=>{
     for(let i=0;i<wStrokeIdx;i++) drawCompletedStroke(wStrokes[i]);
   },800);
 };
-

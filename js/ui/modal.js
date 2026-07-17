@@ -78,22 +78,25 @@ async function fetchCharSvgPaths(ch){
   let svgText;
   if(_svgCache[code]){svgText=_svgCache[code];}
   else{
-    const resp=await fetch(url);if(!resp.ok)throw new Error('Not found');
-    svgText=await resp.text();
+    const response=await fetch(url);
+    if(!response.ok)throw new Error(`Stroke request failed: ${response.status}`);
+    svgText=await response.text();
     // KanjiVG SVGs declare the "kvg" namespace only via an internal DTD
     // default attribute, which browsers' DOMParser does not apply. Without
     // an explicit xmlns:kvg on the root <svg>, parsing fails with
     // "unbound namespace prefix" and every stroke-order lookup silently
     // returns zero paths. Inject the namespace declaration before parsing.
     if(!/xmlns:kvg=/.test(svgText)){
-      svgText=svgText.replace('<svg ','<svg xmlns:kvg="http://kanjivg.tagaini.net" ');
+      svgText=svgText.replace(/<svg\b([^>]*)>/i,'<svg xmlns:kvg="http://kanjivg.tagaini.net"$1>');
     }
     _svgCache[code]=svgText;
   }
   const parser=new DOMParser();
   const doc=parser.parseFromString(svgText,'image/svg+xml');
-  if(doc.querySelector('parsererror')){throw new Error('SVG parse error');}
-  return {paths:doc.querySelectorAll('path[id*="-s"]'),nums:doc.querySelectorAll('g[id*="StrokeNumbers"] text'),
+  if(doc.querySelector('parsererror'))throw new Error('SVG parse error');
+  const paths=doc.querySelectorAll('path[id*="-s"]');
+  if(!paths.length)throw new Error('No stroke paths');
+  return {paths,nums:doc.querySelectorAll('g[id*="StrokeNumbers"] text'),
     vb:doc.querySelector('svg')?.getAttribute('viewBox')||'0 0 109 109'};
 }
 

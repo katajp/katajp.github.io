@@ -107,16 +107,17 @@ function renderFreeWriteQ(pool){
       }else setTimeout(resetAttempt,650);
     });
   }
-  function showManualFallback(){
-    loading=false;meterLabel.textContent=t('strokeFallback');actions.innerHTML="";
-    const reveal=document.createElement("button");reveal.className="btn";reveal.textContent=t('revealAnswer');reveal.onclick=()=>{showNext(false,`${t('answerIs')}: ${correct.ch}`);};actions.appendChild(reveal);
-  }
-
-  canvas.addEventListener('pointerdown',start);canvas.addEventListener('pointermove',move);canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);
-  (async()=>{
+  async function loadStrokeData(){
+    loading=true;actions.innerHTML="";meterLabel.textContent=t('loadingStroke');
     try{
       const {paths}=await fetchCharSvgPaths(correct.ch);expectedStrokes=[...paths].map(path=>path.getAttribute('d')).filter(Boolean);if(!expectedStrokes.length)throw new Error('No stroke data');maxAttempts=expectedStrokes.length;
       expectedSamples=expectedStrokes.map(d=>sampleSvgPath(d,64).points.map(point=>({x:point.x*size/109,y:point.y*size/109})));loading=false;renderMeter();
-    }catch(error){showManualFallback();}
-  })();
+    }catch(error){
+      loading=true;meterLabel.textContent=t('strokeUnavailable');actions.innerHTML="";
+      const retry=document.createElement("button");retry.className="btn";retry.textContent=t('retryStrokeLoad');retry.onclick=loadStrokeData;actions.appendChild(retry);
+    }
+  }
+
+  canvas.addEventListener('pointerdown',start);canvas.addEventListener('pointermove',move);canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);
+  loadStrokeData();
 }
